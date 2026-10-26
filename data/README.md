@@ -6,13 +6,13 @@ Put 80 CSV files in `data/equities/`, named `EBAY_20210104.csv`, `LULU_20210104.
 
 Each file needs the original 90-column schema and every minute from 09:30 inclusive to 16:00 exclusive, America/New_York. Required fields and validation rules are in `PAIRS`, `REQUIRED` and `load_session()`. The loader reports missing or invalid sessions rather than substituting data. The first 20 valid prior sessions form each evaluated day's history; an evaluated day with insufficient history is skipped.
 
-From the repository root:
+After setting up the Python environment in the [README](../README.md) and placing the files above, run this from the repository root:
 
 ```bash
 python -m study.equity
 ```
 
-Defaults locate `data/equities/` and `results/equities/` relative to the repository, regardless of the working directory. To run from elsewhere or use another input folder, use absolute paths:
+The module command above requires the repository root as the working directory. To run from elsewhere, invoke the script directly with absolute paths:
 
 ```bash
 python /path/to/execution-timing-lab/study/equity.py \

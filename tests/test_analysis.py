@@ -1,17 +1,9 @@
-import csv
-import io
-import tempfile
 import unittest
-from datetime import date, datetime, timedelta, timezone
-from pathlib import Path
-from unittest.mock import patch
-from zipfile import ZipFile
 
 import numpy as np
 
-from study.analysis import capped_replay, evaluate, moving_block_interval, run, schedule
-from study.adaptive import fit_alpha, release_path, replay, run as run_adaptive
-from study.data import MINUTE, acquire, aggregate, period_days
+from study.analysis import capped_replay, evaluate, moving_block_interval, schedule
+from study.adaptive import release_path, replay
 
 
 class ExecutionAnalysisTests(unittest.TestCase):
@@ -44,33 +36,6 @@ class ExecutionAnalysisTests(unittest.TestCase):
             np.testing.assert_allclose(schedule(history, method), schedule(recent, method))
         np.testing.assert_allclose(schedule(np.empty((0, 96)), "twap"), uniform)
 
-    def test_full_run_does_not_use_target_day_volume_in_its_schedule(self):
-        days = [date(2026, 6, 11) + timedelta(days=i) for i in range(27)]
-        prices, opens = np.linspace(99, 101, 96), np.full(96, 100.0)
-
-        def fixture(change_future):
-            observations = []
-            for day in days:
-                volume = np.ones(96)
-                if change_future and day >= date(2026, 7, 1):
-                    volume[0] = 1_000
-                observations.append((day, opens, volume, prices * volume))
-            return {asset: observations for asset in ("BTCUSDT", "ETHUSDT")}
-
-        first_day_prices = []
-        with tempfile.TemporaryDirectory() as temporary:
-            for changed in (False, True):
-                output = Path(temporary) / str(changed)
-                with patch("study.analysis.load_days", return_value=fixture(changed)):
-                    run("unused.csv", output)
-                with (output / "daily_results.csv").open(newline="") as source:
-                    first_day_prices.append({
-                        (row["asset"], row["method"]): float(row["reference_price"])
-                        for row in csv.DictReader(source) if row["date"] == "2026-07-01"
-                    })
-        self.assertEqual(len(first_day_prices[0]), 6)
-        for key, price in first_day_prices[0].items():
-            self.assertAlmostEqual(first_day_prices[1][key], price)
 
     def test_constant_prices_and_oracle_schedule_have_zero_tracking_error(self):
         flat = evaluate([0.1, 0.3, 0.6], [123, 123, 123], [1, 2, 7], 123)
@@ -287,127 +252,11 @@ class FeedbackReleaseTests(unittest.TestCase):
         self.assertAlmostEqual(result["full_order_deviation_bps"], -10_000 / 110)
         self.assertAlmostEqual(result["arrival_shortfall_bps"], 900)
 
-    def test_alpha_matches_calibration_advance_and_ignores_other_dates(self):
-        def record(day, volume):
-            return {"date": day, "weights": np.full(4, 0.25), "volumes": np.asarray(volume),
-                    "mean_volumes": np.full(4, 100), "quantity": 100, "cap": 0.1}
-
-        calibration = [record(date(2026, 7, 1), [100] * 4),
-                       record("2026-08-31", [20, 100, 100, 100])]
-        expected = 1.9 / 3
-        self.assertAlmostEqual(fit_alpha(calibration), expected)
-        for validation_volume in ([1] * 4, [1_000_000] * 4):
-            other_dates = [record(day, validation_volume) for day in
-                           ("2026-06-30", "2026-09-01", "2026-10-01", "2026-10-23")]
-            self.assertAlmostEqual(fit_alpha(calibration + other_dates), expected)
-        with self.assertRaises(ValueError):
-            fit_alpha([record("2026-10-01", [100] * 4)])
 
     def test_invalid_release_paths_are_rejected(self):
         for releases in ([4, 3, 10], [4, 7, 9], [-1, 7, 10], [4, np.nan, 10]):
             with self.subTest(releases=releases), self.assertRaises(ValueError):
                 replay(releases, [100, 100, 100], [10, 10, 10], 10, 0.1, 100)
-
-    def test_full_run_freezes_alpha_before_validation_and_updates_history_after_decisions(self):
-        def observations(start, count, change_validation=False):
-            rows = []
-            for offset in range(count):
-                day = start + timedelta(days=offset)
-                volumes = np.full(96, 10_000.0)
-                if change_validation:
-                    volumes *= 20
-                    volumes[:48] *= 10
-                opens = np.full(96, 100.0)
-                rows.append((day, opens, volumes, volumes * 100))
-            return {asset: rows for asset in ("BTCUSDT", "ETHUSDT")}
-
-        old = observations(date(2026, 6, 1), 122)
-        summaries, first_october, second_october = [], [], []
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            old_path, new_path = root / "old.csv", root / "new.csv"
-            old_path.write_text("synthetic historical fixture\n")
-            for changed in (False, True):
-                new = observations(date(2026, 10, 1), 23, changed)
-                new_path.write_text(f"synthetic validation fixture: {changed}\n")
-                output = root / str(changed)
-                with patch("study.adaptive.load_days", side_effect=[old, new]):
-                    summaries.append(run_adaptive(old_path, new_path, output))
-                with (output / "adaptive_daily.csv").open(newline="") as source:
-                    rows = list(csv.DictReader(source))
-                for day, destination in (("2026-10-01", first_october),
-                                         ("2026-10-02", second_october)):
-                    destination.append({
-                        (row["asset"], row["cap"]): float(row["mean_cumulative_advance"])
-                        for row in rows if row["date"] == day and row["method"] == "no_feedback"
-                    })
-        self.assertEqual(summaries[0]["fixed_alpha"], summaries[1]["fixed_alpha"])
-        self.assertEqual(len(first_october[0]), 4)
-        self.assertEqual(first_october[0], first_october[1])
-        self.assertNotEqual(second_october[0], second_october[1])
-
-
-class DailyArchiveTests(unittest.TestCase):
-    @staticmethod
-    def minute_rows():
-        start = datetime(2026, 10, 1, 8, tzinfo=timezone.utc)
-        rows = []
-        for i in range(480):
-            timestamp = int((start + timedelta(minutes=i)).timestamp() * 1_000_000)
-            price, volume = 100 + i % 5, i % 5 + 1
-            rows.append([timestamp, price, price, price, price, volume, timestamp + MINUTE - 1,
-                         price * volume, 1, 0, 0, 0])
-        return rows
-
-    def aggregate_rows(self, rows):
-        with tempfile.TemporaryDirectory() as directory:
-            archive = Path(directory) / "BTCUSDT-1m-2026-10-01.zip"
-            stream = io.StringIO()
-            csv.writer(stream).writerows(rows)
-            with ZipFile(archive, "w") as zipped:
-                zipped.writestr(archive.stem + ".csv", stream.getvalue())
-            return aggregate(archive, "BTCUSDT", "2026-10-01")
-
-    def test_daily_archive_keeps_exact_window_and_volume_weighted_prices(self):
-        rows, checks = self.aggregate_rows(self.minute_rows())
-        self.assertEqual(len(rows), 96)
-        self.assertEqual(checks["valid_days"], 1)
-        self.assertEqual(checks["excluded_days"], [])
-        self.assertEqual(rows[0][:4], ("BTCUSDT", "2026-10-01", 0, 100))
-        self.assertEqual(rows[0][4], 15)
-        self.assertEqual(rows[0][5], 1540)
-        self.assertAlmostEqual(rows[0][5] / rows[0][4], 102 + 2 / 3)
-        self.assertNotEqual(rows[0][5] / rows[0][4], 102)
-        self.assertEqual(period_days("2026-10-01"), ["2026-10-01"])
-        self.assertEqual(len(period_days("2026-02")), 28)
-
-    def test_daily_archive_excludes_missing_or_duplicate_minutes(self):
-        minutes = self.minute_rows()
-        for sample, reason in ((minutes[1:], "missing_minutes"),
-                               (minutes + [minutes[0]], "duplicate_minute")):
-            with self.subTest(reason=reason):
-                rows, checks = self.aggregate_rows(sample)
-                self.assertEqual(rows, [])
-                self.assertEqual(checks["valid_days"], 0)
-                self.assertEqual(checks["excluded_days"][0]["reasons"][reason], 1)
-
-    def test_daily_archive_rejects_a_different_date(self):
-        minutes = self.minute_rows()
-        minutes[0][0] += 24 * 60 * MINUTE
-        minutes[0][6] += 24 * 60 * MINUTE
-        with self.assertRaisesRegex(ValueError, "Out-of-period"):
-            self.aggregate_rows(minutes)
-
-    def test_download_rejects_bytes_that_fail_the_official_checksum(self):
-        name = "BTCUSDT-1m-2026-10-01.zip"
-        checksum = f"{'0' * 64}  {name}\n".encode()
-        with tempfile.TemporaryDirectory() as directory:
-            with patch("study.data.CACHE", Path(directory)), patch(
-                "study.data.urlopen", side_effect=[io.BytesIO(checksum), io.BytesIO(b"corrupt archive")]
-            ):
-                with self.assertRaisesRegex(ValueError, "Checksum mismatch"):
-                    acquire("BTCUSDT", "2026-10-01", frequency="daily")
-            self.assertFalse((Path(directory) / (name + ".part")).exists())
 
 
 if __name__ == "__main__":

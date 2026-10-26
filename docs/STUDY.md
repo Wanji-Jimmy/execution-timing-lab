@@ -65,7 +65,7 @@ Both definitions accommodate USD 1m on every date, but they leave different head
 
 First obtain the stock minute files from [AlgoSeek's book companion data](https://algoseek.com/ml-for-trading/) under the applicable terms. Put the 80 files in `data/equities/` as `EBAY_20210104.csv`, `LULU_20210104.csv`, etc. The required dates are in `sessions()` in [study/equity.py](../study/equity.py). Raw stock data is not bundled or redistributed.
 
-Then run the commands below. The tests use synthetic data and can also run without the stock files. The equity command stops without writing outputs if no usable evaluation data is available.
+From the repository root, run the commands below after obtaining the files. The tests use synthetic data and can also run without the stock files. The equity command stops without writing outputs if no usable evaluation data is available.
 
 ```bash
 python3 -m venv .venv
@@ -81,11 +81,11 @@ The selected session is 09:30 <= minute start < 16:00, America/New_York, grouped
 
 ## Earlier work and source hashes
 
-The [archive branch](https://github.com/Wanji-Jimmy/execution-timing-lab/tree/archive/before-2026-10-26-simplification) preserves the earlier BTC/ETH outputs, plot script, download manifests and original layout. Its README and protocol document that experiment. The order there is denominated in USDT, not USD; the stock and crypto samples use different years and do not establish a causal cross-market comparison.
+The [archive branch](https://github.com/Wanji-Jimmy/execution-timing-lab/tree/archive/before-2026-10-26-simplification) preserves the earlier BTC/ETH download and experiment code, tests, outputs and original layout. Its README and protocol document that experiment. The order there is denominated in USDT, not USD; the stock and crypto samples use different years and do not establish a causal cross-market comparison.
 
-The shared release, replay and data checks remain in `study/` with their tests. The full sequence of design decisions and amendments is in [protocol.md](protocol.md).
+The stock run starts in [equity.py](../study/equity.py), which loads sessions and calls the release and replay functions in [adaptive.py](../study/adaptive.py). [analysis.py](../study/analysis.py) keeps optional baseline and statistical helpers with their invariant tests; it is not a separate runnable pipeline. The stock loader and all its tests remain in this branch. The full sequence of design decisions and amendments is in [protocol.md](protocol.md).
 
-The three saved stock result files were retained byte for byte during the layout cleanup on 26 October 2026. Their source hashes identify the original evaluation files, not the current reorganised files. Imports, paths and documentation have since changed; the saved results were not rerun or relabelled. A new run records the current source paths and hashes.
+The three saved stock result files were retained byte for byte during the layout cleanup on 26 October 2026. Their source hashes identify the original evaluation files, not the current reorganised files. Imports and paths have since changed, and unused crypto experiment code has been removed from this branch. The saved results were not rerun or relabelled. A new run records the current stock producer files (`equity.py` and `adaptive.py`) and protocol hashes; the optional `analysis.py` helpers do not produce the stock results.
 
 ## Limits and references
 

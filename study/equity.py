@@ -289,7 +289,7 @@ def run(data_dir, output_dir):
     results = summarize(rows)
     root = Path(__file__).resolve().parents[1]
     sources = {name: sha256(root / name) for name in
-               ("study/equity.py", "study/adaptive.py", "study/analysis.py", "docs/protocol.md")}
+               ("study/equity.py", "study/adaptive.py", "docs/protocol.md")}
     acquisition = {name: sha256(data_dir / name) for name in
                    ("acquisition_manifest.json", "quality_report.json", "five_minute_coverage.json") if (data_dir / name).exists()}
     summary = {
