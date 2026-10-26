@@ -24,6 +24,6 @@ python /path/to/execution-timing-lab/study/equity.py \
 
 A successful run writes a CSV, JSON and chart. Existing files with those names in the output directory are replaced. No usable evaluation records means no output is written. Tests use synthetic data and need no downloads.
 
-The saved result metadata records all input checksums and history dates. This sample has no common stocks, dates or raw-file hashes with the EBAY/LULU stock diagnostic in Market Making Lab. Both use AlgoSeek; different observations do not imply statistically independent markets.
+The saved result metadata records all input checksums and history dates. Its manifest checksum identifies the [original run manifest](https://github.com/Wanji-Jimmy/execution-timing-lab/blob/f3d831a1ee86694f5998dcc06ff89f27dd92ae52/data/acquisition_manifest.json); only a documentation reference was later corrected, with all 252 data entries unchanged. This sample has no common stocks, dates or raw-file hashes with the EBAY/LULU stock diagnostic in Market Making Lab. Both use AlgoSeek; different observations do not imply statistically independent markets.
 
 Provider adjustment flags were not independently certified. Issuer split histories show no split in this window, but cash dividends occurred; no additional price or volume adjustment is applied. See the [dated protocol](../docs/protocol.md#independent-equity-sample---26-october-2026) for sources and the previous pilot's archive. Source availability and terms can change.

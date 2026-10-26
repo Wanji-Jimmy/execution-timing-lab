@@ -6,7 +6,7 @@
     "AMZN",
     "INTC"
   ],
-  "selection_rule": "AAPL/MSFT/AMZN/INTC fixed before new outcomes; all 63 regular sessions in 2021 Q2; see plan_before_evaluation.json",
+  "selection_rule": "AAPL/MSFT/AMZN/INTC fixed before new outcomes; all 63 regular sessions in 2021 Q2; see docs/protocol.md#independent-equity-sample---26-october-2026",
   "files": [
     {
       "date": "20210401",
