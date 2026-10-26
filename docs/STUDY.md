@@ -1,44 +1,59 @@
-# Execution Timing Lab
+# Stock Order Execution
 
 How much of an order can a trading schedule finish before the deadline?
 
-This Python study compares four ways to split a large buy order through the day. It separates two problems: too little total capacity, and releasing the order too late to use capacity that was available earlier.
+This study separates too little total capacity from releasing the order too late to use earlier capacity. The current sample is AAPL, MSFT, AMZN and INTC from 1 April to 30 June 2021. Each stock has 63 sessions: 20 for warm-up and 43 for evaluation, using a rolling history of the preceding 20 valid sessions.
 
-## Stock experiment
+The names and full quarter were selected before calculating these results. They share no stocks, dates or raw-file hashes with Market Making Lab's EBAY/LULU sample. Both use AlgoSeek; four selected Nasdaq stocks are not a representative universe or statistically independent markets.
 
-**At USD 1 million, every method completed on every test date in the model. Volume feedback made no change to the historical schedule.** The more complex rule did not add value in this sample.
-
-The data contains EBAY and LULU minute bars from 4 January to 2 March 2021: 40 sessions per stock, with the first 20 used as history. The remaining 20 dates are evaluated using a rolling, strictly prior 20-session window. The two stocks and dates were fixed before running the comparisons, based on the available public sample rather than performance.
+## Four release rules
 
 - **TWAP:** release equal quantities every five minutes.
 - **Historical:** follow the average intraday volume shares of the previous 20 sessions.
 - **Fixed early:** release 10% immediately and follow the historical plan for the rest.
 - **Feedback:** advance the historical plan if past intraday volume suggests insufficient later capacity.
 
-Each method buys the same share quantity, initially worth USD 1m. Eligible shares fill at a historical five-minute reference price, up to an assumed 1% or 5% of reported volume. Unfilled shares carry forward. This is a hypothetical execution model, not a record of live trades.
+Each method buys the same share quantity, initially worth USD 1m. Eligible shares fill at a historical five-minute reference price, up to an assumed 1% or 5% of reported volume. Unfilled shares carry forward. This is a hypothetical replay, not observed execution.
 
-## Why the volume field matters
+## What changed with the new data
 
-The source separates exchange-reported volume (`Volume`) from FINRA/TRF volume (`FinraVolume`); `TotalVolume` is their sum. All 31,200 selected minute rows passed coverage and volume-identity checks. A zero-volume minute is kept; a missing minute is not replaced with zero.
+All four methods completed on all 43 evaluation dates per stock under both caps and volume definitions. Feedback made no change to the historical schedule. The more complex rule did not add value at this size in this sample.
 
-The same release path is replayed with two capacity definitions: a percentage of Total volume, or a percentage of exchange-only volume. Both runs retain the same Total-field prices and benchmark. Only the capacity assumption changes. This does not model venue routing or claim that reported volume is available to our order.
+At the 1% cap, mean absolute distance from the common selected-window VWAP was:
 
-At both caps, all 20 dates complete for every method and scope. At 1%, mean absolute distance from the common selected-window VWAP is:
-
-| Capacity definition | Stock | TWAP | Historical | Fixed early | Feedback |
+| Capacity definition | Stock | TWAP (bp) | Historical (bp) | Fixed early (bp) | Feedback (bp) |
 |---|---|---:|---:|---:|---:|
-| Total | EBAY | 11.25 bp | 10.84 bp | 13.58 bp | 10.84 bp |
-| Exchange only | EBAY | 11.90 bp | 11.08 bp | 13.18 bp | 11.08 bp |
-| Total | LULU | 8.42 bp | 8.37 bp | 12.47 bp | 8.37 bp |
-| Exchange only | LULU | 8.70 bp | 8.22 bp | 12.32 bp | 8.22 bp |
+| Total | AAPL | 7.12 | 3.73 | 7.51 | 3.73 |
+| Exchange only | AAPL | 7.12 | 3.73 | 7.51 | 3.73 |
+| Total | MSFT | 6.37 | 3.98 | 6.89 | 3.98 |
+| Exchange only | MSFT | 6.37 | 3.98 | 6.89 | 3.98 |
+| Total | AMZN | 7.28 | 4.24 | 9.00 | 4.24 |
+| Exchange only | AMZN | 7.28 | 4.24 | 9.00 | 4.24 |
+| Total | INTC | 8.15 | 5.37 | 8.72 | 5.37 |
+| Exchange only | INTC | 8.15 | 5.37 | 8.72 | 5.37 |
 
-One basis point is 0.01%. Smaller absolute distance means closer benchmark tracking, not necessarily a lower buy price. These small-sample averages do not establish a better future strategy. Fixed early release tracked the benchmark less closely here; feedback was identical to historical.
+One basis point is 0.01%. Historical weights tracked the benchmark more closely than equal release for every stock here. Fixed early release tracked it less closely than historical weights. Smaller absolute distance does not necessarily mean a cheaper buy price, and these averages do not establish future superiority or cost savings. Price comparisons include only dates where every rule completes under both scopes; unfinished orders remain in completion statistics.
 
-## A capacity check without a parameter search
+## Why volume coverage matters
 
-After the first run, a mathematical diagnostic was added: how large could a **fixed fractional schedule** have been before it left shares unfilled?
+The source separates exchange-reported `Volume` from `FinraVolume`; `TotalVolume` is their sum. All 98,280 selected minute rows passed coverage and volume-identity checks. A zero-volume minute is retained; a missing minute is not silently replaced with zero.
 
-For every suffix of the day, the quantity still to be released must fit within the remaining capacity. If `r[j-1]` is the fraction released before bucket j, with `r[-1] = 0`:
+The same release path is replayed with two capacity definitions: a percentage of Total volume, or a percentage of exchange-only volume. Both retain the same Total-field price reference and benchmark. Only the capacity assumption changes. This does not simulate routing or imply that reported off-exchange volume is available to our order.
+
+At USD 1m, neither definition prevents completion, but they imply different headroom. For the historical schedule at the 1% cap:
+
+| Stock | Median Total limit ($m) | Median exchange-only limit ($m) | Lowest exchange-only limit ($m) | Reduction between medians |
+|---|---:|---:|---:|---:|
+| AAPL | 74.59 | 39.94 | 27.45 | 46.4% |
+| MSFT | 39.65 | 27.88 | 19.56 | 29.7% |
+| AMZN | 72.69 | 48.15 | 30.89 | 33.8% |
+| INTC | 8.55 | 5.89 | 3.03 | 31.1% |
+
+The reduction is `1 - median(exchange limit) / median(Total limit)`, calculated separately for each stock. It is a difference in modelled capacity, not a reduction in trading costs or proof of accessible liquidity.
+
+## A capacity check without a size search
+
+For a fixed fractional schedule, every suffix of the day must have enough remaining capacity for shares still to be released. If `r[j-1]` is the fraction released before bucket j, with `r[-1] = 0`:
 
 ```
 Q_max = min_j(cap * sum(volume[j:]) / (1 - r[j-1]))
@@ -46,55 +61,34 @@ Q_max = min_j(cap * sum(volume[j:]) / (1 - r[j-1]))
 
 Ignore zero denominators. The first suffix is the whole-day capacity bound; later suffixes detect capacity lost by waiting too long. This applies to TWAP, historical and fixed early. Feedback is excluded because its fractions change with order size.
 
-A three-bucket example: available capacity is 50, 20 and 10 shares. An equal release schedule can finish at most 30 shares, even though total capacity is 80. At Q = 60 it releases 20 per bucket and fills 20, 20, 10, leaving 10 unfilled.
+For example, capacity of 50, 20 and 10 shares allows an equal release schedule to finish at most 30 shares, although total capacity is 80. At Q = 60 it releases 20 per bucket and fills 20, 20, 10, leaving 10 unfilled.
 
-This calculation uses realised future volume. It is a **retrospective diagnostic**, not a size recommendation known before trading. It was added after seeing the USD 1m results; the original size and comparisons were kept unchanged.
+The formula uses realised future volume. It is a retrospective diagnostic, not a forecast. It was developed after the earlier EBAY/LULU pilot and fixed before this replacement sample was evaluated. A higher capacity limit and closer benchmark tracking are different objectives.
 
-For the historical schedule at the 1% cap, the median deadline-compatible notional was:
+## Reproduce and read the code
 
-| Stock | Total-volume capacity | Exchange-only capacity | Lowest exchange-only limit |
-|---|---:|---:|---:|
-| EBAY | USD 2.86m | USD 1.96m | USD 1.13m |
-| LULU | USD 2.87m | USD 2.03m | USD 1.22m |
-
-Both definitions accommodate USD 1m on every date, but they leave different headroom. Fixed early release increases the capacity limit while tracking the benchmark less closely in this sample. That is a trade-off, not a universal strategy ranking.
-
-![Historical capacity and benchmark tracking](../results/equities/equity_capacity.png)
-
-## Reproduce
-
-First obtain the stock minute files from [AlgoSeek's book companion data](https://algoseek.com/ml-for-trading/) under the applicable terms. Put the 80 files in `data/equities/` as `EBAY_20210104.csv`, `LULU_20210104.csv`, etc. The required dates are in `sessions()` in [study/equity.py](../study/equity.py). Raw stock data is not bundled or redistributed.
-
-From the repository root, run the commands below after obtaining the files. The tests use synthetic data and can also run without the stock files. The equity command stops without writing outputs if no usable evaluation data is available.
+Follow [data setup](../data/README.md) for the 252 source members and checksums. Raw data stays local. After installing the dependencies:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -r requirements.txt
 python -m unittest discover -s tests -q
-python -m study.equity
+python -m study.equity --data-dir /path/to/stock-files --output-dir /path/to/new-results
 ```
 
-The selected session is 09:30 <= minute start < 16:00, America/New_York, grouped into 78 five-minute buckets. Records assigned to 16:00 are excluded, so the benchmark is not an auction-complete full-day VWAP. Each price is weighted by its corresponding volume field. The order quantity uses the first reported trade in the opening minute, not that minute's later VWAP.
+The tests use synthetic data. The equity command requires the original source files and refuses to write output if no usable evaluation records exist. Missing or invalid sessions are disclosed; insufficient prior history is skipped rather than supplemented with future data.
 
-`results/equities/equity_daily.csv` contains 640 policy/cap/scope comparisons across 40 evaluated stock-days. The JSON records coverage, exclusions, exact history dates, file hashes and summaries. Tests check conservation, capacity limits, causal release decisions, missing data, zero-volume handling and the analytical boundary.
+Read [equity.py](../study/equity.py) for loading and evaluation, [adaptive.py](../study/adaptive.py) for release and replay, then [stock tests](../tests/test_equity.py). [analysis.py](../study/analysis.py) holds optional baseline and diagnostic helpers, not another experiment entry point.
 
-## Earlier work and source hashes
+The selected window is 09:30 <= minute start < 16:00, America/New_York, grouped into 78 five-minute buckets. Each VWAP is weighted by its corresponding volume field. The share quantity uses the first reported trade in the opening minute, not that minute's later VWAP. Records assigned to 16:00 are excluded, so this is not an auction-complete full-day benchmark.
 
-The [archive branch](https://github.com/Wanji-Jimmy/execution-timing-lab/tree/archive/before-2026-10-26-simplification) preserves the earlier BTC/ETH download and experiment code, tests, outputs and original layout. Its README and protocol document that experiment. The order there is denominated in USDT, not USD; the stock and crypto samples use different years and do not establish a causal cross-market comparison.
+The CSV contains 2,752 comparisons across 172 evaluated stock-days. The JSON records coverage, exclusions, exact history dates, input hashes and current producer hashes. Tests cover quantity conservation, caps, causal decisions, missing/zero-volume data, separation of stock histories and the analytical boundary.
 
-The stock run starts in [equity.py](../study/equity.py), which loads sessions and calls the release and replay functions in [adaptive.py](../study/adaptive.py). [analysis.py](../study/analysis.py) keeps optional baseline and statistical helpers with their invariant tests; it is not a separate runnable pipeline. The stock loader and all its tests remain in this branch. The full sequence of design decisions and amendments is in [protocol.md](protocol.md).
+## Earlier work and limits
 
-The three saved stock result files were retained byte for byte during the layout cleanup on 26 October 2026. Their source hashes identify the original evaluation files, not the current reorganised files. Imports and paths have since changed, and unused crypto experiment code has been removed from this branch. The saved results were not rerun or relabelled. A new run records the current stock producer files (`equity.py` and `adaptive.py`) and protocol hashes; the optional `analysis.py` helpers do not produce the stock results.
+The [previous pilot archive](https://github.com/Wanji-Jimmy/execution-timing-lab/tree/archive/before-2026-10-26-independent-data) preserves EBAY/LULU results, including the old 29-31% capacity difference. Those numbers are not results of the new sample. The [earlier experiment archive](https://github.com/Wanji-Jimmy/execution-timing-lab/tree/archive/before-2026-10-26-simplification) also retains the original BTC/ETH work. The [protocol](protocol.md) preserves the research sequence and dated selection rules.
 
-## Limits and references
-
-Historical bar prices do not reveal our queue position, spread paid, fees, market impact or actual fills. Participation caps are scenarios. Continuous share quantities are an approximation. The stock sample has only two names and 20 evaluation dates each; the study establishes neither profit nor net execution savings. Issuer filings were checked for splits in the sample window, but the downloaded bundle's retrospective adjustment policy is not independently certified.
+Historical bars do not reveal queues, spreads paid, fees, own market impact or actual fills. Participation caps are scenarios, and continuous share quantities are an approximation. Four stocks over one quarter do not establish profit, executable size guarantees or broad market robustness. Issuer histories show no split in the window, but cash dividends occurred; provider prices and share volumes are unchanged, with retrospective adjustment flags not independently certified.
 
 - [AlgoSeek field definitions](https://algoseek.com/docs/rest-api/reference/endpoint-v-1-data-us-equity-taq-1-min-identifier-get) and [data licensing](https://algoseek.com/licensing-faq/).
-- [Binance public archives](https://github.com/binance/binance-public-data) and their [published data terms](https://github.com/binance/binance-public-data/blob/master/TERMS_AND_CONDITIONS.md).
-- [CALM](https://github.com/Shivesh777/CALM) motivated comparing forecast quality with execution outcomes; its online aggregation algorithm is not implemented here.
-- [Busseti–Boyd](https://stanford.edu/~boyd/papers/vwap_opt_exec.html) and [Markov–Mazur–Saltz](https://arxiv.org/html/1409.1441v1) inform the scheduling question. This rule does not reproduce their optimizers.
-- [hftbacktest's fill assumptions](https://hftbacktest.readthedocs.io/en/latest/order_fill.html) inform the replay limitations; no hftbacktest code is used.
-
-The schedules and capacity identities are established ideas. The work here is the controlled comparison, data checks and analysis of when the assumptions matter.
+- [CALM](https://github.com/Shivesh777/CALM) motivated comparing forecast quality with execution outcomes; its online algorithm is not implemented here.
+- [Busseti-Boyd](https://stanford.edu/~boyd/papers/vwap_opt_exec.html) and [Markov-Mazur-Saltz](https://arxiv.org/html/1409.1441v1) inform the scheduling question; this study does not reproduce their optimizers.
+- [hftbacktest fill assumptions](https://hftbacktest.readthedocs.io/en/latest/order_fill.html) inform the replay limitations; no hftbacktest code is used.

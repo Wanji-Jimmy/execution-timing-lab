@@ -1,18 +1,20 @@
 # Stock data
 
-Obtain the minute files from [AlgoSeek's Machine Learning for Trading companion data](https://algoseek.com/ml-for-trading/) under its applicable terms. Raw market data is not included in this repository.
+Use the [AlgoSeek Machine Learning for Trading companion data](https://algoseek.com/ml-for-trading/), under its applicable terms. Select **AAPL, MSFT, AMZN and INTC, 1 April-30 June 2021** from the 2021 daily archives. Raw prices are not redistributed here.
 
-Put 80 CSV files in `data/equities/`, named `EBAY_20210104.csv`, `LULU_20210104.csv`, etc. The exact 40 dates per stock are returned by `sessions()` in [study/equity.py](../study/equity.py): 4 January to 2 March 2021, excluding weekends, 18 January and 15 February.
+The [acquisition manifest](acquisition_manifest.json) identifies the 252 source members, public archive links, CRC32 values and SHA256 hashes. Extract only the four selected stocks from each daily ZIP and place them in `data/equities/` as `AAPL_20210401.csv`, `MSFT_20210401.csv`, etc. The original archive member is named, for example, `20210401/A/AAPL.csv`.
 
-Each file needs the original 90-column schema and every minute from 09:30 inclusive to 16:00 exclusive, America/New_York. Required fields and validation rules are in `PAIRS`, `REQUIRED` and `load_session()`. The loader reports missing or invalid sessions rather than substituting data. The first 20 valid prior sessions form each evaluated day's history; an evaluated day with insufficient history is skipped.
+There are 63 sessions per stock. [sessions()](../study/equity.py) lists them: Good Friday (2 April) and Memorial Day (31 May) are excluded; 18 and 21 June were open in 2021. The first 20 dates end 29 April. The next 43 dates, 30 April-30 June, use a rolling history of the preceding 20 valid sessions.
 
-After setting up the Python environment in the [README](../README.md) and placing the files above, run this from the repository root:
+Each CSV needs the original 90-column schema and all minute starts from 09:30 inclusive to 16:00 exclusive, America/New_York. `PAIRS`, `REQUIRED` and `load_session()` define the fields and checks. A zero-volume minute may have no VWAP; a missing minute is not treated as zero. Invalid sessions and insufficient history are reported rather than substituted.
+
+After installing the dependencies in the [README](../README.md), run from the repository root:
 
 ```bash
 python -m study.equity
 ```
 
-The module command above requires the repository root as the working directory. To run from elsewhere, invoke the script directly with absolute paths:
+To keep raw data elsewhere and avoid replacing the saved results:
 
 ```bash
 python /path/to/execution-timing-lab/study/equity.py \
@@ -20,4 +22,8 @@ python /path/to/execution-timing-lab/study/equity.py \
   --output-dir /path/to/new-results
 ```
 
-A successful run writes a CSV, JSON and chart. Existing files with those names are replaced. No usable evaluation records means no output is written. The [saved metadata](../results/equities/equity_results.json) records the original file checksums and coverage; the [study](../docs/STUDY.md) explains the session and price definitions.
+A successful run writes a CSV, JSON and chart. Existing files with those names in the output directory are replaced. No usable evaluation records means no output is written. Tests use synthetic data and need no downloads.
+
+The saved result metadata records all input checksums and history dates. This sample has no common stocks, dates or raw-file hashes with the EBAY/LULU stock diagnostic in Market Making Lab. Both use AlgoSeek; different observations do not imply statistically independent markets.
+
+Provider adjustment flags were not independently certified. Issuer split histories show no split in this window, but cash dividends occurred; no additional price or volume adjustment is applied. See the [dated protocol](../docs/protocol.md#independent-equity-sample---26-october-2026) for sources and the previous pilot's archive. Source availability and terms can change.

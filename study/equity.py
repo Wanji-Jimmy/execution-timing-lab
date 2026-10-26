@@ -17,7 +17,7 @@ if __package__ in (None, ""):
 from study.adaptive import METHODS, release_path, replay
 
 
-ASSETS = ("EBAY", "LULU")
+ASSETS = ("AAPL", "MSFT", "AMZN", "INTC")
 CAPS, SCOPES = (0.01, 0.05), ("total", "exchange")
 LOOKBACK, BUCKETS, NOTIONAL, ALPHA = 20, 78, 1_000_000, 0.10
 PAIRS = {"exchange": ("Volume", "VolumeWeightPrice"),
@@ -28,8 +28,8 @@ REQUIRED.update(field for pair in PAIRS.values() for field in pair)
 
 
 def sessions():
-    start, end = date(2021, 1, 4), date(2021, 3, 2)
-    holidays = {date(2021, 1, 18), date(2021, 2, 15)}
+    start, end = date(2021, 4, 1), date(2021, 6, 30)
+    holidays = {date(2021, 4, 2), date(2021, 5, 31)}
     return [day for i in range((end - start).days + 1)
             if (day := start + timedelta(days=i)).weekday() < 5 and day not in holidays]
 
@@ -232,7 +232,8 @@ def plot_results(summary, output):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    fig, axes = plt.subplots(2, 2, figsize=(12, 7), constrained_layout=True)
+    fig, axes = plt.subplots(len(ASSETS), 2, figsize=(12, 3 * len(ASSETS) + 1),
+                             squeeze=False, constrained_layout=True)
     labels = ("TWAP", "Historical", "Fixed early", "Feedback")
     for i, asset in enumerate(ASSETS):
         group = summary[asset]["0.01"]
@@ -257,12 +258,14 @@ def plot_results(summary, output):
             ax.grid(axis="y", alpha=0.15)
             ax.set_axisbelow(True)
     handles, legend_labels = axes[0, 0].get_legend_handles_labels()
-    all_complete = all(g["evaluation_days"] == 20 and g["common_complete_days"] == 20
+    evaluation_days = len(sessions()) - LOOKBACK
+    all_complete = all(g["evaluation_days"] == evaluation_days and g["common_complete_days"] == evaluation_days
                        for asset in ASSETS for g in summary[asset].values())
-    completion = "All four rules complete 20/20 sessions under both scopes and caps." if all_complete else "Price panels use only dates complete for all four rules under both scopes."
+    completion = (f"All four rules complete {evaluation_days}/{evaluation_days} sessions under both scopes and caps."
+                  if all_complete else "Price panels use only dates complete for all four rules under both scopes.")
     fig.suptitle("Capacity headroom and reference-price differences", fontsize=16)
     fig.legend(handles, legend_labels, loc="outside lower center", ncol=2, frameon=False,
-               title=completion + "\nLimits are ex-post diagnostics added after baseline results; whiskers reach sample minima. Dashed line: USD 1m.")
+               title=completion + "\nLimits use realised future volume; whiskers reach sample minima. Dashed line: USD 1m.")
     fig.savefig(output, dpi=160, bbox_inches="tight")
     plt.close(fig)
 
@@ -293,12 +296,13 @@ def run(data_dir, output_dir):
     acquisition = {name: sha256(data_dir / name) for name in
                    ("acquisition_manifest.json", "quality_report.json", "five_minute_coverage.json") if (data_dir / name).exists()}
     summary = {
-        "protocol": "docs/protocol.md: Equity extension — 26 October 2026", "notional_usd": NOTIONAL,
+        "protocol": "docs/protocol.md: Independent equity sample - 26 October 2026", "notional_usd": NOTIONAL,
         "symbols": list(ASSETS), "fixed_alpha": ALPHA, "caps": CAPS, "lookback_valid_sessions": LOOKBACK,
         "data_source": "AlgoSeek public Machine Learning for Trading companion minute bars",
         "source_url": "https://algoseek.com/ml-for-trading/", "raw_data_redistributed": False,
         "session_timezone": "America/New_York", "session_window": "09:30 <= minute start < 16:00",
         "buckets_per_session": BUCKETS, "fixed_sessions": [d.isoformat() for d in fixed_sessions],
+        "warmup_sessions": [d.isoformat() for d in fixed_sessions[:LOOKBACK]],
         "evaluation_sessions": [d.isoformat() for d in fixed_sessions[LOOKBACK:]],
         "price_reference": "TotalVolume-weighted TotalVolumeWeightPrice; same selected-window benchmark for both capacities",
         "capacity_scopes": {"total": "TotalVolume", "exchange": "Volume"},
@@ -307,20 +311,18 @@ def run(data_dir, output_dir):
         "history_windows": [{"asset": r["asset"], "date": r["date"].isoformat(), "prior_sessions": r["history_dates"]} for r in records],
         "code_sha256": sources, "acquisition_sha256": acquisition, "results": results,
         "deadline_limit_diagnostic": {
-            "status": "Added after viewing baseline results; no change to order size, policies or sample.",
+            "status": "Developed after the earlier EBAY/LULU pilot; fixed before evaluating this independent stock sample.",
             "formula": "Q_max = min_j cap * sum(volume[j:]) / (1 - release_fraction[j-1]); previous fraction is 0 at j=0; skip zero denominators.",
             "scope": "Fixed-fraction TWAP, historical and fixed_early only. Feedback fractions depend on Q; no such limit is reported.",
             "headroom_definition": "Maximum fixed-schedule notional divided by the unchanged USD 1m order; not an ex-ante capacity promise.",
         },
         "max_suffix_identity_error": max((r["max_suffix_identity_error"] for r in rows), default=None),
         "corporate_actions": {
-            "review": "Issuer SEC filings disclose no stock split or share-unit reset during the sample.",
+            "review": "See the dated sample review and issuer sources in docs/protocol.md.",
             "adjustment": "Provider prices and share volumes are used unchanged. Bundle adjustment flags were not independently certified; no additional adjustment was applied.",
-            "sources": ["https://www.sec.gov/Archives/edgar/data/1065088/000106508822000006/ebay-20211231.htm",
-                        "https://www.sec.gov/Archives/edgar/data/1397187/000139718721000009/lulu-20210131.htm",
-                        "https://www.sec.gov/Archives/edgar/data/1397187/000139718721000018/lulu-20210502.htm"],
+            "sources": ["docs/protocol.md"],
         },
-        "limitations": ["Small historical sample; fixed alpha=0.10 differs from the crypto matched-alpha control.",
+        "limitations": ["Four selected stocks from one historical quarter; fixed alpha=0.10 was not fitted on this sample.",
                         "Selected-window provider bar references exclude records assigned to 16:00; not auction-complete daily VWAP.",
                         "Reported volume coverage is not executable venue access. No routing, queue, spread, fees or own impact model.",
                         "Continuous share quantities and historical reference-price fills are approximations, not actual trades.",
@@ -345,5 +347,7 @@ if __name__ == "__main__":
     parser.add_argument("--output-dir", type=Path, default=root / "results/equities")
     args = parser.parse_args()
     result = run(args.data_dir, args.output_dir)
-    print(f'{result["valid_asset_sessions"]}/80 valid asset-sessions; {result["evaluated_asset_sessions"]}/40 evaluated.')
+    expected = len(ASSETS) * len(sessions())
+    evaluated = len(ASSETS) * (len(sessions()) - LOOKBACK)
+    print(f'{result["valid_asset_sessions"]}/{expected} valid asset-sessions; {result["evaluated_asset_sessions"]}/{evaluated} evaluated.')
     print(f'Results saved to {args.output_dir}; provider adjustment flags remain uncertified (see metadata).')

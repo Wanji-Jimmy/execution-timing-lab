@@ -7,7 +7,7 @@ from pathlib import Path
 import numpy as np
 
 from study.adaptive import METHODS, release_path, replay
-from study.equity import (ALPHA, BUCKETS, CAPS, PAIRS, REQUIRED, SCOPES, build_records,
+from study.equity import (ALPHA, ASSETS, BUCKETS, CAPS, LOOKBACK, PAIRS, REQUIRED, SCOPES, build_records,
                     evaluate_record, fixed_schedule_capacity, load_session, run, sessions, summarize)
 
 
@@ -15,16 +15,16 @@ def minute_rows():
     rows = []
     for minute in range(390):
         clock = 570 + minute
-        rows.append({"Date": "20210104", "Ticker": "EBAY", "TimeBarStart": f"{clock // 60:02d}:{clock % 60:02d}",
+        rows.append({"Date": "20210401", "Ticker": "AAPL", "TimeBarStart": f"{clock // 60:02d}:{clock % 60:02d}",
                      "FirstTradeTime": "09:30:00.100000000", "FirstTradePrice": "100",
                      "Volume": "10", "VolumeWeightPrice": "100", "FinraVolume": "20",
                      "FinraVolumeWeightPrice": "103", "TotalVolume": "30", "TotalVolumeWeightPrice": "102"})
     return rows
 
 
-def fixture(day, multiplier=1):
+def fixture(day, multiplier=1, asset="AAPL"):
     total = np.linspace(1000, 5000, BUCKETS) * multiplier
-    return {"asset": "EBAY", "date": day, "arrival_price": 100,
+    return {"asset": asset, "date": day, "arrival_price": 100,
             "volumes": {"total": total, "exchange": total * 0.6, "finra": total * 0.4},
             "prices": {scope: np.linspace(99, 101, BUCKETS) for scope in PAIRS}}
 
@@ -49,21 +49,26 @@ class EquityDataTests(unittest.TestCase):
 
     def load(self, rows):
         with tempfile.TemporaryDirectory() as directory:
-            path = Path(directory) / "EBAY_20210104.csv"
+            path = Path(directory) / "AAPL_20210401.csv"
             fields = sorted(REQUIRED) + [f"unused_{i}" for i in range(90 - len(REQUIRED))]
             with path.open("w", newline="") as target:
                 writer = csv.DictWriter(target, fieldnames=fields)
                 writer.writeheader()
                 writer.writerows(rows)
-            return load_session(path, "EBAY", sessions()[0])
+            return load_session(path, "AAPL", sessions()[0])
 
-    def test_fixed_sessions_have_no_holidays_and_twenty_evaluation_days(self):
+    def test_q2_sample_excludes_closures_and_is_separate_from_the_old_pilot(self):
         dates = sessions()
-        self.assertEqual(len(dates), 40)
-        self.assertEqual(str(dates[20]), "2021-02-02")
-        self.assertEqual(str(dates[-1]), "2021-03-02")
-        self.assertNotIn("2021-01-18", list(map(str, dates)))
-        self.assertNotIn("2021-02-15", list(map(str, dates)))
+        self.assertEqual(len(dates), 63)
+        self.assertEqual(str(dates[0]), "2021-04-01")
+        self.assertEqual(str(dates[LOOKBACK]), "2021-04-30")
+        self.assertEqual(str(dates[-1]), "2021-06-30")
+        self.assertEqual(len(dates[LOOKBACK:]), 43)
+        self.assertTrue(all(day.weekday() < 5 for day in dates))
+        self.assertNotIn("2021-04-02", list(map(str, dates)))
+        self.assertNotIn("2021-05-31", list(map(str, dates)))
+        self.assertIn("2021-06-18", list(map(str, dates)))
+        self.assertTrue(set(ASSETS).isdisjoint({"EBAY", "LULU"}))
 
     def test_field_pairing_and_zero_minute_are_not_close_price_proxies(self):
         rows = minute_rows()
@@ -134,16 +139,28 @@ class EquityExecutionTests(unittest.TestCase):
         days = [fixture(day) for day in sessions()]
         before, skips = build_records(days)
         self.assertFalse(skips)
-        self.assertEqual(len(before), 20)
+        self.assertEqual(len(before), len(sessions()) - LOOKBACK)
         changed = [fixture(day, 10 if index >= 20 else 1) for index, day in enumerate(sessions())]
         after, _ = build_records(changed)
         np.testing.assert_allclose(before[0]["mean_volumes"], after[0]["mean_volumes"])
         self.assertNotEqual(before[1]["mean_volumes"][0], after[1]["mean_volumes"][0])
         self.assertTrue(all(d < before[0]["date"].isoformat() for d in before[0]["history_dates"]))
         reduced, skipped = build_records(days[1:])
-        self.assertEqual(len(reduced), 19)
+        self.assertEqual(len(reduced), len(sessions()) - LOOKBACK - 1)
         self.assertEqual(skipped[0]["prior_valid_sessions"], 19)
         self.assertEqual(skipped[0]["date"], str(sessions()[20]))
+
+    def test_each_stock_keeps_its_own_history_when_another_stock_has_missing_data(self):
+        observations = [fixture(day, index + 1, asset) for index, asset in enumerate(ASSETS)
+                        for day in sessions() if not (asset == ASSETS[0] and day == sessions()[0])]
+        records, skipped = build_records(observations)
+        self.assertEqual([(x["asset"], x["date"]) for x in skipped], [(ASSETS[0], str(sessions()[LOOKBACK]))])
+        for index, asset in enumerate(ASSETS):
+            stock = [r for r in records if r["asset"] == asset]
+            self.assertEqual(len(stock), len(sessions()) - LOOKBACK - int(index == 0))
+            np.testing.assert_allclose(stock[0]["mean_volumes"], fixture(sessions()[0], index + 1)["volumes"]["total"])
+            self.assertEqual(len(stock[0]["history_dates"]), LOOKBACK)
+            self.assertTrue(all(day < stock[0]["date"].isoformat() for day in stock[0]["history_dates"]))
 
     def test_78_bucket_quantity_conservation_and_current_volume_causality(self):
         record = build_records([fixture(day) for day in sessions()])[0][0]
@@ -182,7 +199,7 @@ class EquityExecutionTests(unittest.TestCase):
             row["date"] = str(sessions()[21])
         second[0].update(fully_completed=False, unfilled_fraction=0.5,
                          full_order_deviation_bps=None, full_order_absolute_deviation_bps=None)
-        result = summarize(rows + second)["EBAY"]["0.05"]
+        result = summarize(rows + second)["AAPL"]["0.05"]
         self.assertEqual(result["evaluation_days"], 2)
         self.assertEqual(result["common_complete_days"], 1)
         self.assertEqual(result["common_complete_dates"], [str(sessions()[20])])
