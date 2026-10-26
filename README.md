@@ -1,8 +1,8 @@
-# Execution Timing Lab
+# OxHack: Stock Order Execution
 
 **How much of an order can a trading schedule finish before the deadline?**
 
-A Python study of order timing and capacity. It compares equal release (TWAP), a historical volume schedule, a fixed early release, and a rule that reacts to past intraday volume. The aim is to separate insufficient total capacity from capacity lost by releasing an order too late.
+A Python project on order timing and capacity, started at OxHack and extended afterwards. It compares equal release (TWAP), a historical volume schedule, a fixed early release, and a rule that reacts to past intraday volume. The aim is to separate insufficient total capacity from capacity lost by releasing an order too late.
 
 ## Main finding
 
