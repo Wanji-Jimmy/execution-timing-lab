@@ -1,0 +1,243 @@
+{
+  "protocol": "protocol.md",
+  "evaluation_start": "2026-07-01",
+  "evaluation_end": "2026-09-30",
+  "notional_usdt": 1000000,
+  "lookback_valid_days": 20,
+  "ewma_alpha": 0.2,
+  "liquidity_stress": {
+    "status": "Exploratory extension added after inspecting the initial participation diagnostics.",
+    "caps": [
+      0.01,
+      0.05
+    ],
+    "assumption": "Fill up to cap times historical bucket volume at bucket VWAP; carry backlog; leave deadline residual unfilled.",
+    "limitation": "Counterfactual volume-cap fills, not evidence of actual queue access or executable capacity. Partial-order prices are not ranked."
+  },
+  "bootstrap": {
+    "block_days": 7,
+    "draws": 2000,
+    "seed": 20261025,
+    "interval": "95% descriptive noncircular moving-block percentile"
+  },
+  "interpretation": {
+    "signed_deviation": "Positive means a higher reference purchase price than market VWAP; negative means lower.",
+    "absolute_deviation": "Closeness to market VWAP, not profit or net cost saving.",
+    "arrival_shortfall": "Positive means a higher reference purchase price than the 08:00 UTC open.",
+    "participation": "Scheduled base quantity / historical bucket base volume; no demonstrated fill capacity.",
+    "limitations": "Historical bucket VWAP completion assumed. No spread, fee, impact, queue or routing model."
+  },
+  "skipped_warmup": [],
+  "assets": {
+    "BTCUSDT": {
+      "days": 92,
+      "methods": {
+        "twap": {
+          "mean_absolute_deviation_bps": 17.75207919762355,
+          "mean_signed_deviation_bps": -5.073299948413217,
+          "mean_arrival_shortfall_bps": 17.533566900902724,
+          "mean_volume_share_rmse": 0.010097415724484509,
+          "mean_fraction_above_1pct": 0.12330163043478261,
+          "mean_fraction_above_5pct": 0.0035099637681159416,
+          "max_participation": 0.1947601772365703,
+          "max_absolute_attribution_residual": 3.3651303965598345e-11
+        },
+        "historical": {
+          "mean_absolute_deviation_bps": 13.803417598338182,
+          "mean_signed_deviation_bps": -3.401650604543732,
+          "mean_arrival_shortfall_bps": 19.272697500537948,
+          "mean_volume_share_rmse": 0.009987876998003194,
+          "mean_fraction_above_1pct": 0.10609148550724637,
+          "mean_fraction_above_5pct": 0.0030570652173913045,
+          "max_participation": 0.42346157647673904,
+          "max_absolute_attribution_residual": 2.091837814077735e-11
+        },
+        "ewma": {
+          "mean_absolute_deviation_bps": 14.40230051550564,
+          "mean_signed_deviation_bps": -3.7389525833516073,
+          "mean_arrival_shortfall_bps": 18.931977166396038,
+          "mean_volume_share_rmse": 0.010268745469427467,
+          "mean_fraction_above_1pct": 0.10654438405797102,
+          "mean_fraction_above_5pct": 0.0031702898550724635,
+          "max_participation": 0.36505605074325437,
+          "max_absolute_attribution_residual": 2.3646862246096134e-11
+        }
+      },
+      "comparisons_vs_twap": {
+        "historical": {
+          "mean_absolute_error_difference_bps": -3.948661599285368,
+          "descriptive_interval_bps": [
+            -5.136423184709105,
+            -2.417890441387111
+          ],
+          "days_lower_absolute_deviation": 64,
+          "days_better_volume_forecast_but_worse_tracking": 4,
+          "first_counterexample": {
+            "date": "2026-07-11",
+            "method_volume_rmse": 0.01480935069079035,
+            "twap_volume_rmse": 0.015027782626234467,
+            "method_absolute_deviation_bps": 3.434073263549995,
+            "twap_absolute_deviation_bps": 1.829256870384581
+          }
+        },
+        "ewma": {
+          "mean_absolute_error_difference_bps": -3.3497786821179085,
+          "descriptive_interval_bps": [
+            -4.522312982931946,
+            -1.749641454238996
+          ],
+          "days_lower_absolute_deviation": 62,
+          "days_better_volume_forecast_but_worse_tracking": 5,
+          "first_counterexample": {
+            "date": "2026-07-30",
+            "method_volume_rmse": 0.007556607112092416,
+            "twap_volume_rmse": 0.008599816889077204,
+            "method_absolute_deviation_bps": 7.817611431739827,
+            "twap_absolute_deviation_bps": 4.139659234863079
+          }
+        }
+      },
+      "liquidity_stress": {
+        "1pct": {
+          "twap": {
+            "days_fully_completed": 79,
+            "mean_completion_fraction": 0.9940779571279078,
+            "worst_completion_fraction": 0.8066810352894584
+          },
+          "historical": {
+            "days_fully_completed": 77,
+            "mean_completion_fraction": 0.9896755097254741,
+            "worst_completion_fraction": 0.7276036524478008
+          },
+          "ewma": {
+            "days_fully_completed": 79,
+            "mean_completion_fraction": 0.9897635280413365,
+            "worst_completion_fraction": 0.7395024171403034
+          }
+        },
+        "5pct": {
+          "twap": {
+            "days_fully_completed": 92,
+            "mean_completion_fraction": 0.9999999999999993,
+            "worst_completion_fraction": 0.9999999999999974
+          },
+          "historical": {
+            "days_fully_completed": 92,
+            "mean_completion_fraction": 1.0,
+            "worst_completion_fraction": 0.9999999999999996
+          },
+          "ewma": {
+            "days_fully_completed": 92,
+            "mean_completion_fraction": 1.0,
+            "worst_completion_fraction": 0.9999999999999996
+          }
+        }
+      }
+    },
+    "ETHUSDT": {
+      "days": 92,
+      "methods": {
+        "twap": {
+          "mean_absolute_deviation_bps": 24.990960026565222,
+          "mean_signed_deviation_bps": -9.912856624308407,
+          "mean_arrival_shortfall_bps": 18.589931968368674,
+          "mean_volume_share_rmse": 0.010699591831073158,
+          "mean_fraction_above_1pct": 0.3552989130434783,
+          "mean_fraction_above_5pct": 0.02321105072463768,
+          "max_participation": 0.1733066143013348,
+          "max_absolute_attribution_residual": 7.673861546209082e-13
+        },
+        "historical": {
+          "mean_absolute_deviation_bps": 17.707931459295715,
+          "mean_signed_deviation_bps": -7.446353207474636,
+          "mean_arrival_shortfall_bps": 21.2051541866061,
+          "mean_volume_share_rmse": 0.0105296348792365,
+          "mean_fraction_above_1pct": 0.3115942028985507,
+          "mean_fraction_above_5pct": 0.021059782608695652,
+          "max_participation": 0.17931644609642375,
+          "max_absolute_attribution_residual": 6.110667527536862e-13
+        },
+        "ewma": {
+          "mean_absolute_deviation_bps": 17.629203375598983,
+          "mean_signed_deviation_bps": -7.1926912646218595,
+          "mean_arrival_shortfall_bps": 21.47597606020099,
+          "mean_volume_share_rmse": 0.010882666939719048,
+          "mean_fraction_above_1pct": 0.3055932971014493,
+          "mean_fraction_above_5pct": 0.02185235507246377,
+          "max_participation": 0.1808418893856795,
+          "max_absolute_attribution_residual": 7.664979762012081e-13
+        }
+      },
+      "comparisons_vs_twap": {
+        "historical": {
+          "mean_absolute_error_difference_bps": -7.283028567269502,
+          "descriptive_interval_bps": [
+            -9.84074764962499,
+            -4.434200885026316
+          ],
+          "days_lower_absolute_deviation": 70,
+          "days_better_volume_forecast_but_worse_tracking": 8,
+          "first_counterexample": {
+            "date": "2026-08-05",
+            "method_volume_rmse": 0.011250951094442537,
+            "twap_volume_rmse": 0.012308539999210605,
+            "method_absolute_deviation_bps": 2.367404729719433,
+            "twap_absolute_deviation_bps": 0.6155609545990266
+          }
+        },
+        "ewma": {
+          "mean_absolute_error_difference_bps": -7.361756650966237,
+          "descriptive_interval_bps": [
+            -10.171801860270314,
+            -4.161638888478017
+          ],
+          "days_lower_absolute_deviation": 72,
+          "days_better_volume_forecast_but_worse_tracking": 4,
+          "first_counterexample": {
+            "date": "2026-07-18",
+            "method_volume_rmse": 0.006767681277431822,
+            "twap_volume_rmse": 0.006824029421960755,
+            "method_absolute_deviation_bps": 1.4647720475359174,
+            "twap_absolute_deviation_bps": 0.9108078587097931
+          }
+        }
+      },
+      "liquidity_stress": {
+        "1pct": {
+          "twap": {
+            "days_fully_completed": 58,
+            "mean_completion_fraction": 0.9418147131648099,
+            "worst_completion_fraction": 0.31703597716481985
+          },
+          "historical": {
+            "days_fully_completed": 58,
+            "mean_completion_fraction": 0.9330605812933072,
+            "worst_completion_fraction": 0.31703597716481985
+          },
+          "ewma": {
+            "days_fully_completed": 56,
+            "mean_completion_fraction": 0.93312248169326,
+            "worst_completion_fraction": 0.31703597716481985
+          }
+        },
+        "5pct": {
+          "twap": {
+            "days_fully_completed": 91,
+            "mean_completion_fraction": 0.9999456866526787,
+            "worst_completion_fraction": 0.9950031720464656
+          },
+          "historical": {
+            "days_fully_completed": 91,
+            "mean_completion_fraction": 0.9999360933933044,
+            "worst_completion_fraction": 0.9941205921839971
+          },
+          "ewma": {
+            "days_fully_completed": 91,
+            "mean_completion_fraction": 0.9999434966345183,
+            "worst_completion_fraction": 0.9948016903756849
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,1640 @@
+{
+  "protocol": "protocol.md: Feedback release study",
+  "notional_usdt": 1000000,
+  "lookback_valid_days": 20,
+  "buckets_per_day": 96,
+  "activity_smoothing": 0.5,
+  "periods": {
+    "calibration": [
+      "2026-07-01",
+      "2026-08-31"
+    ],
+    "seen_check": [
+      "2026-09-01",
+      "2026-09-30"
+    ],
+    "validation": [
+      "2026-10-01",
+      "2026-10-23"
+    ]
+  },
+  "fixed_alpha": {
+    "BTCUSDT": {
+      "0.01": 0.0,
+      "0.05": 0.0
+    },
+    "ETHUSDT": {
+      "0.01": 0.002130482579002996,
+      "0.05": 0.0
+    }
+  },
+  "validation_exclusions": [],
+  "calibration_advance_matching_error_percentage_points": {
+    "BTCUSDT": {
+      "0.01": 0.0,
+      "0.05": 0.0
+    },
+    "ETHUSDT": {
+      "0.01": -7.355227538141662e-16,
+      "0.05": 0.0
+    }
+  },
+  "sha256": {
+    "data/buckets.csv": "56499ece090cd57815135d86acd3600eec2f06a47a675446a41e7cd313e36462",
+    "data/validation_buckets.csv": "23c4805a40acd40523e73d15ee03778de502489e8c1cb1bd84d635516c157983",
+    "protocol.md": "e5cdf2e6866c207d945f83eb08cceeb45a319c1e06a9ad3534f342a792f121a7",
+    "adaptive.py": "ac8b6044a2632b53f5fc8e25a1ca0159f0735a9f02db54941a4958832ddd82fb",
+    "data/manifest.json": "763e20bca19106ac5ed483130e7979155b4055916afd73d0dff153df4282161f",
+    "data/validation_manifest.json": "7e05065a2b4bdc30556074d58fe8b0232a966fd65b6082b9d52c028a22244f71"
+  },
+  "bootstrap": {
+    "calendar_block_days": 7,
+    "draws": 2000,
+    "seed": 20261025,
+    "scope": "Descriptive, paired per asset; assets are never pooled as independent days."
+  },
+  "limitations": "Historical bucket-VWAP fills and exogenous participation caps are assumptions. No actual impact, spread, fees, queue access or profit is measured. Prices use only common-complete dates. July-September informed design; October is newly reserved historical validation, not a live trial.",
+  "diagnostic_definitions": {
+    "trigger": "Cumulative release exceeds historical release by more than 1e-10 of Q.",
+    "false_alarm": "Triggered on a day historical already completes; does not imply a worse price.",
+    "timing_failure": "Incomplete despite sufficient full-window capacity; a trigger may have come too late or been too small.",
+    "weighted_participation": "Sum(fill * fill / historical_volume) / sum(fill); concentration proxy, not actual cost."
+  },
+  "period_results": {
+    "calibration": {
+      "BTCUSDT": {
+        "0.01": {
+          "days": 62,
+          "common_complete_days": 48,
+          "common_complete_dates": [
+            "2026-07-01",
+            "2026-07-02",
+            "2026-07-04",
+            "2026-07-06",
+            "2026-07-07",
+            "2026-07-08",
+            "2026-07-09",
+            "2026-07-10",
+            "2026-07-11",
+            "2026-07-13",
+            "2026-07-14",
+            "2026-07-15",
+            "2026-07-16",
+            "2026-07-17",
+            "2026-07-20",
+            "2026-07-21",
+            "2026-07-22",
+            "2026-07-23",
+            "2026-07-24",
+            "2026-07-27",
+            "2026-07-28",
+            "2026-07-29",
+            "2026-07-30",
+            "2026-07-31",
+            "2026-08-03",
+            "2026-08-04",
+            "2026-08-05",
+            "2026-08-06",
+            "2026-08-07",
+            "2026-08-10",
+            "2026-08-11",
+            "2026-08-12",
+            "2026-08-13",
+            "2026-08-14",
+            "2026-08-17",
+            "2026-08-18",
+            "2026-08-19",
+            "2026-08-20",
+            "2026-08-21",
+            "2026-08-22",
+            "2026-08-23",
+            "2026-08-24",
+            "2026-08-25",
+            "2026-08-26",
+            "2026-08-27",
+            "2026-08-28",
+            "2026-08-30",
+            "2026-08-31"
+          ],
+          "methods": {
+            "twap": {
+              "days_completed": 50,
+              "mean_unfilled_pct": 0.8548713754956537,
+              "worst_unfilled_pct": 19.331896471054158,
+              "total_capacity_shortage_days": 2,
+              "timing_only_failure_days": 10,
+              "mean_timing_shortage_pct": 0.29687879733204625,
+              "mean_cumulative_advance_pct": 5.119338692336637,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -7.770976145043477,
+                "full_order_absolute_deviation_bps": 20.861338945019785,
+                "arrival_shortfall_bps": 23.299617642847494,
+                "weighted_participation": 0.003911846854802805
+              }
+            },
+            "historical": {
+              "days_completed": 48,
+              "mean_unfilled_pct": 1.5019632282142024,
+              "worst_unfilled_pct": 27.23963475521992,
+              "total_capacity_shortage_days": 2,
+              "timing_only_failure_days": 12,
+              "mean_timing_shortage_pct": 0.9439706500505947,
+              "mean_cumulative_advance_pct": -1.8931202483776865e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -6.099596384587859,
+                "full_order_absolute_deviation_bps": 15.959754455892849,
+                "arrival_shortfall_bps": 25.04478270841257,
+                "weighted_participation": 0.00366363757200055
+              }
+            },
+            "fixed_early": {
+              "days_completed": 48,
+              "mean_unfilled_pct": 1.5019632282142024,
+              "worst_unfilled_pct": 27.23963475521992,
+              "total_capacity_shortage_days": 2,
+              "timing_only_failure_days": 12,
+              "mean_timing_shortage_pct": 0.9439706500505947,
+              "mean_cumulative_advance_pct": -1.8931202483776865e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -6.099596384587859,
+                "full_order_absolute_deviation_bps": 15.959754455892849,
+                "arrival_shortfall_bps": 25.04478270841257,
+                "weighted_participation": 0.00366363757200055
+              }
+            },
+            "feedback": {
+              "days_completed": 48,
+              "mean_unfilled_pct": 1.5019632282142024,
+              "worst_unfilled_pct": 27.23963475521992,
+              "total_capacity_shortage_days": 2,
+              "timing_only_failure_days": 12,
+              "mean_timing_shortage_pct": 0.9439706500505947,
+              "mean_cumulative_advance_pct": -1.8931202483776865e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -6.099596384587859,
+                "full_order_absolute_deviation_bps": 15.959754455892849,
+                "arrival_shortfall_bps": 25.04478270841257,
+                "weighted_participation": 0.00366363757200055
+              }
+            },
+            "no_feedback": {
+              "days_completed": 48,
+              "mean_unfilled_pct": 1.5019632282142024,
+              "worst_unfilled_pct": 27.23963475521992,
+              "total_capacity_shortage_days": 2,
+              "timing_only_failure_days": 12,
+              "mean_timing_shortage_pct": 0.9439706500505947,
+              "mean_cumulative_advance_pct": -1.8931202483776865e-17
+            }
+          },
+          "feedback_diagnostics": {
+            "trigger_days": 0,
+            "rescued_vs_historical_days": 0,
+            "false_alarm_days": 0,
+            "triggered_but_incomplete_days": 0,
+            "untriggered_timing_failure_days": 12,
+            "triggered_timing_failure_days": 0,
+            "feedback_complete_fixed_incomplete_days": 0,
+            "fixed_complete_feedback_incomplete_days": 0,
+            "feedback_complete_ablation_incomplete_days": 0,
+            "ablation_complete_feedback_incomplete_days": 0
+          },
+          "feedback_minus_fixed_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_ablation_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_fixed_mean_advance_percentage_points": 0.0,
+          "descriptive_95pct_interval_percentage_points": [
+            0.0,
+            0.0
+          ],
+          "interval_note": "Paired calendar-day blocks, separately by asset."
+        },
+        "0.05": {
+          "days": 62,
+          "common_complete_days": 62,
+          "common_complete_dates": [
+            "2026-07-01",
+            "2026-07-02",
+            "2026-07-03",
+            "2026-07-04",
+            "2026-07-05",
+            "2026-07-06",
+            "2026-07-07",
+            "2026-07-08",
+            "2026-07-09",
+            "2026-07-10",
+            "2026-07-11",
+            "2026-07-12",
+            "2026-07-13",
+            "2026-07-14",
+            "2026-07-15",
+            "2026-07-16",
+            "2026-07-17",
+            "2026-07-18",
+            "2026-07-19",
+            "2026-07-20",
+            "2026-07-21",
+            "2026-07-22",
+            "2026-07-23",
+            "2026-07-24",
+            "2026-07-25",
+            "2026-07-26",
+            "2026-07-27",
+            "2026-07-28",
+            "2026-07-29",
+            "2026-07-30",
+            "2026-07-31",
+            "2026-08-01",
+            "2026-08-02",
+            "2026-08-03",
+            "2026-08-04",
+            "2026-08-05",
+            "2026-08-06",
+            "2026-08-07",
+            "2026-08-08",
+            "2026-08-09",
+            "2026-08-10",
+            "2026-08-11",
+            "2026-08-12",
+            "2026-08-13",
+            "2026-08-14",
+            "2026-08-15",
+            "2026-08-16",
+            "2026-08-17",
+            "2026-08-18",
+            "2026-08-19",
+            "2026-08-20",
+            "2026-08-21",
+            "2026-08-22",
+            "2026-08-23",
+            "2026-08-24",
+            "2026-08-25",
+            "2026-08-26",
+            "2026-08-27",
+            "2026-08-28",
+            "2026-08-29",
+            "2026-08-30",
+            "2026-08-31"
+          ],
+          "methods": {
+            "twap": {
+              "days_completed": 62,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 5.119338692336637,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -6.23274065796232,
+                "full_order_absolute_deviation_bps": 16.941337393383385,
+                "arrival_shortfall_bps": 18.26541486875319,
+                "weighted_participation": 0.006046845715317333
+              }
+            },
+            "historical": {
+              "days_completed": 62,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": -1.8931202483776865e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -4.679397041734558,
+                "full_order_absolute_deviation_bps": 13.132290408333116,
+                "arrival_shortfall_bps": 19.876773902991257,
+                "weighted_participation": 0.0060675626296146125
+              }
+            },
+            "fixed_early": {
+              "days_completed": 62,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": -1.8931202483776865e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -4.679397041734558,
+                "full_order_absolute_deviation_bps": 13.132290408333116,
+                "arrival_shortfall_bps": 19.876773902991257,
+                "weighted_participation": 0.0060675626296146125
+              }
+            },
+            "feedback": {
+              "days_completed": 62,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": -1.8931202483776865e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -4.679397041734558,
+                "full_order_absolute_deviation_bps": 13.132290408333116,
+                "arrival_shortfall_bps": 19.876773902991257,
+                "weighted_participation": 0.0060675626296146125
+              }
+            },
+            "no_feedback": {
+              "days_completed": 62,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": -1.8931202483776865e-17
+            }
+          },
+          "feedback_diagnostics": {
+            "trigger_days": 0,
+            "rescued_vs_historical_days": 0,
+            "false_alarm_days": 0,
+            "triggered_but_incomplete_days": 0,
+            "untriggered_timing_failure_days": 0,
+            "triggered_timing_failure_days": 0,
+            "feedback_complete_fixed_incomplete_days": 0,
+            "fixed_complete_feedback_incomplete_days": 0,
+            "feedback_complete_ablation_incomplete_days": 0,
+            "ablation_complete_feedback_incomplete_days": 0
+          },
+          "feedback_minus_fixed_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_ablation_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_fixed_mean_advance_percentage_points": 0.0,
+          "descriptive_95pct_interval_percentage_points": [
+            0.0,
+            0.0
+          ],
+          "interval_note": "Paired calendar-day blocks, separately by asset."
+        }
+      },
+      "ETHUSDT": {
+        "0.01": {
+          "days": 62,
+          "common_complete_days": 28,
+          "common_complete_dates": [
+            "2026-07-04",
+            "2026-07-06",
+            "2026-07-07",
+            "2026-07-08",
+            "2026-07-11",
+            "2026-07-14",
+            "2026-07-15",
+            "2026-07-16",
+            "2026-07-17",
+            "2026-07-20",
+            "2026-07-22",
+            "2026-07-23",
+            "2026-07-28",
+            "2026-07-29",
+            "2026-08-06",
+            "2026-08-10",
+            "2026-08-11",
+            "2026-08-17",
+            "2026-08-19",
+            "2026-08-20",
+            "2026-08-21",
+            "2026-08-23",
+            "2026-08-24",
+            "2026-08-25",
+            "2026-08-26",
+            "2026-08-27",
+            "2026-08-28",
+            "2026-08-31"
+          ],
+          "methods": {
+            "twap": {
+              "days_completed": 33,
+              "mean_unfilled_pct": 8.384611733891505,
+              "worst_unfilled_pct": 68.29640228351802,
+              "total_capacity_shortage_days": 13,
+              "timing_only_failure_days": 16,
+              "mean_timing_shortage_pct": 0.6286655538631042,
+              "mean_cumulative_advance_pct": 6.615656778451111,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -18.47282781225233,
+                "full_order_absolute_deviation_bps": 31.94477594384412,
+                "arrival_shortfall_bps": 35.4173932364718,
+                "weighted_participation": 0.0063226830615367505
+              }
+            },
+            "historical": {
+              "days_completed": 33,
+              "mean_unfilled_pct": 9.31652162002087,
+              "worst_unfilled_pct": 68.29640228351802,
+              "total_capacity_shortage_days": 13,
+              "timing_only_failure_days": 16,
+              "mean_timing_shortage_pct": 1.5605754399924674,
+              "mean_cumulative_advance_pct": 4.6903307999747745e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -15.706033814722426,
+                "full_order_absolute_deviation_bps": 23.157331028477838,
+                "arrival_shortfall_bps": 38.370296612899985,
+                "weighted_participation": 0.006080387814975711
+              }
+            },
+            "fixed_early": {
+              "days_completed": 33,
+              "mean_unfilled_pct": 9.284556911222646,
+              "worst_unfilled_pct": 68.29640228351802,
+              "total_capacity_shortage_days": 13,
+              "timing_only_failure_days": 16,
+              "mean_timing_shortage_pct": 1.528610731194243,
+              "mean_cumulative_advance_pct": 0.11950904412207301,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -15.774275268522048,
+                "full_order_absolute_deviation_bps": 23.288554434463098,
+                "arrival_shortfall_bps": 38.299095438029,
+                "weighted_participation": 0.006080375699666519
+              }
+            },
+            "feedback": {
+              "days_completed": 33,
+              "mean_unfilled_pct": 9.31652162002087,
+              "worst_unfilled_pct": 68.29640228351802,
+              "total_capacity_shortage_days": 13,
+              "timing_only_failure_days": 16,
+              "mean_timing_shortage_pct": 1.5605754399924674,
+              "mean_cumulative_advance_pct": 0.11950904412207228,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -15.688364498248342,
+                "full_order_absolute_deviation_bps": 23.139661712003754,
+                "arrival_shortfall_bps": 38.38879022160155,
+                "weighted_participation": 0.006092580285697195
+              }
+            },
+            "no_feedback": {
+              "days_completed": 33,
+              "mean_unfilled_pct": 9.31652162002087,
+              "worst_unfilled_pct": 68.29640228351802,
+              "total_capacity_shortage_days": 13,
+              "timing_only_failure_days": 16,
+              "mean_timing_shortage_pct": 1.5605754399924674,
+              "mean_cumulative_advance_pct": 4.6903307999747745e-17
+            }
+          },
+          "feedback_diagnostics": {
+            "trigger_days": 5,
+            "rescued_vs_historical_days": 0,
+            "false_alarm_days": 1,
+            "triggered_but_incomplete_days": 4,
+            "untriggered_timing_failure_days": 15,
+            "triggered_timing_failure_days": 1,
+            "feedback_complete_fixed_incomplete_days": 0,
+            "fixed_complete_feedback_incomplete_days": 0,
+            "feedback_complete_ablation_incomplete_days": 0,
+            "ablation_complete_feedback_incomplete_days": 0
+          },
+          "feedback_minus_fixed_mean_unfilled_percentage_points": 0.031964708798224876,
+          "feedback_minus_ablation_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_fixed_mean_advance_percentage_points": -7.355227538141662e-16,
+          "descriptive_95pct_interval_percentage_points": [
+            0.01919854861014542,
+            0.04455851178150032
+          ],
+          "interval_note": "Paired calendar-day blocks, separately by asset."
+        },
+        "0.05": {
+          "days": 62,
+          "common_complete_days": 61,
+          "common_complete_dates": [
+            "2026-07-01",
+            "2026-07-02",
+            "2026-07-03",
+            "2026-07-04",
+            "2026-07-05",
+            "2026-07-06",
+            "2026-07-07",
+            "2026-07-08",
+            "2026-07-09",
+            "2026-07-10",
+            "2026-07-11",
+            "2026-07-12",
+            "2026-07-13",
+            "2026-07-14",
+            "2026-07-15",
+            "2026-07-16",
+            "2026-07-17",
+            "2026-07-18",
+            "2026-07-19",
+            "2026-07-20",
+            "2026-07-21",
+            "2026-07-22",
+            "2026-07-23",
+            "2026-07-24",
+            "2026-07-25",
+            "2026-07-26",
+            "2026-07-27",
+            "2026-07-28",
+            "2026-07-29",
+            "2026-07-30",
+            "2026-07-31",
+            "2026-08-02",
+            "2026-08-03",
+            "2026-08-04",
+            "2026-08-05",
+            "2026-08-06",
+            "2026-08-07",
+            "2026-08-08",
+            "2026-08-09",
+            "2026-08-10",
+            "2026-08-11",
+            "2026-08-12",
+            "2026-08-13",
+            "2026-08-14",
+            "2026-08-15",
+            "2026-08-16",
+            "2026-08-17",
+            "2026-08-18",
+            "2026-08-19",
+            "2026-08-20",
+            "2026-08-21",
+            "2026-08-22",
+            "2026-08-23",
+            "2026-08-24",
+            "2026-08-25",
+            "2026-08-26",
+            "2026-08-27",
+            "2026-08-28",
+            "2026-08-29",
+            "2026-08-30",
+            "2026-08-31"
+          ],
+          "methods": {
+            "twap": {
+              "days_completed": 61,
+              "mean_unfilled_pct": 0.008059399925053777,
+              "worst_unfilled_pct": 0.49968279535333415,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 1,
+              "mean_timing_shortage_pct": 0.008059399925053777,
+              "mean_cumulative_advance_pct": 6.615656778451111,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -13.001797771423394,
+                "full_order_absolute_deviation_bps": 24.981676545584655,
+                "arrival_shortfall_bps": 24.091942944527727,
+                "weighted_participation": 0.012543244584231948
+              }
+            },
+            "historical": {
+              "days_completed": 61,
+              "mean_unfilled_pct": 0.009482915832262745,
+              "worst_unfilled_pct": 0.5879407816002902,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 1,
+              "mean_timing_shortage_pct": 0.009482915832262745,
+              "mean_cumulative_advance_pct": 4.6903307999747745e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -10.041713490450379,
+                "full_order_absolute_deviation_bps": 17.520750296992233,
+                "arrival_shortfall_bps": 27.20065416532283,
+                "weighted_participation": 0.01214579014820017
+              }
+            },
+            "fixed_early": {
+              "days_completed": 61,
+              "mean_unfilled_pct": 0.009482915832262745,
+              "worst_unfilled_pct": 0.5879407816002902,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 1,
+              "mean_timing_shortage_pct": 0.009482915832262745,
+              "mean_cumulative_advance_pct": 4.6903307999747745e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -10.041713490450379,
+                "full_order_absolute_deviation_bps": 17.520750296992233,
+                "arrival_shortfall_bps": 27.20065416532283,
+                "weighted_participation": 0.01214579014820017
+              }
+            },
+            "feedback": {
+              "days_completed": 61,
+              "mean_unfilled_pct": 0.009482915832262745,
+              "worst_unfilled_pct": 0.5879407816002902,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 1,
+              "mean_timing_shortage_pct": 0.009482915832262745,
+              "mean_cumulative_advance_pct": 4.6903307999747745e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -10.041713490450379,
+                "full_order_absolute_deviation_bps": 17.520750296992233,
+                "arrival_shortfall_bps": 27.20065416532283,
+                "weighted_participation": 0.01214579014820017
+              }
+            },
+            "no_feedback": {
+              "days_completed": 61,
+              "mean_unfilled_pct": 0.009482915832262745,
+              "worst_unfilled_pct": 0.5879407816002902,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 1,
+              "mean_timing_shortage_pct": 0.009482915832262745,
+              "mean_cumulative_advance_pct": 4.6903307999747745e-17
+            }
+          },
+          "feedback_diagnostics": {
+            "trigger_days": 0,
+            "rescued_vs_historical_days": 0,
+            "false_alarm_days": 0,
+            "triggered_but_incomplete_days": 0,
+            "untriggered_timing_failure_days": 1,
+            "triggered_timing_failure_days": 0,
+            "feedback_complete_fixed_incomplete_days": 0,
+            "fixed_complete_feedback_incomplete_days": 0,
+            "feedback_complete_ablation_incomplete_days": 0,
+            "ablation_complete_feedback_incomplete_days": 0
+          },
+          "feedback_minus_fixed_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_ablation_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_fixed_mean_advance_percentage_points": 0.0,
+          "descriptive_95pct_interval_percentage_points": [
+            0.0,
+            0.0
+          ],
+          "interval_note": "Paired calendar-day blocks, separately by asset."
+        }
+      }
+    },
+    "seen_check": {
+      "BTCUSDT": {
+        "0.01": {
+          "days": 30,
+          "common_complete_days": 29,
+          "common_complete_dates": [
+            "2026-09-01",
+            "2026-09-02",
+            "2026-09-03",
+            "2026-09-04",
+            "2026-09-05",
+            "2026-09-06",
+            "2026-09-07",
+            "2026-09-08",
+            "2026-09-09",
+            "2026-09-10",
+            "2026-09-11",
+            "2026-09-12",
+            "2026-09-14",
+            "2026-09-15",
+            "2026-09-16",
+            "2026-09-17",
+            "2026-09-18",
+            "2026-09-19",
+            "2026-09-20",
+            "2026-09-21",
+            "2026-09-22",
+            "2026-09-23",
+            "2026-09-24",
+            "2026-09-25",
+            "2026-09-26",
+            "2026-09-27",
+            "2026-09-28",
+            "2026-09-29",
+            "2026-09-30"
+          ],
+          "methods": {
+            "twap": {
+              "days_completed": 29,
+              "mean_unfilled_pct": 0.049358971417092924,
+              "worst_unfilled_pct": 1.4807691425127878,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 1,
+              "mean_timing_shortage_pct": 0.049358971417092924,
+              "mean_cumulative_advance_pct": 5.871777358058091,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -2.811608087790502,
+                "full_order_absolute_deviation_bps": 20.047195812988328,
+                "arrival_shortfall_bps": 17.77390577489502,
+                "weighted_participation": 0.0034276333337926535
+              }
+            },
+            "historical": {
+              "days_completed": 29,
+              "mean_unfilled_pct": 0.06211967921185235,
+              "worst_unfilled_pct": 1.8635903763555708,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 1,
+              "mean_timing_shortage_pct": 0.06211967921185235,
+              "mean_cumulative_advance_pct": 6.319058177951655e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -0.8797425717454248,
+                "full_order_absolute_deviation_bps": 15.583685084309481,
+                "arrival_shortfall_bps": 19.796365062472486,
+                "weighted_participation": 0.0033194042880475933
+              }
+            },
+            "fixed_early": {
+              "days_completed": 29,
+              "mean_unfilled_pct": 0.06211967921185235,
+              "worst_unfilled_pct": 1.8635903763555708,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 1,
+              "mean_timing_shortage_pct": 0.06211967921185235,
+              "mean_cumulative_advance_pct": 6.319058177951655e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -0.8797425717454248,
+                "full_order_absolute_deviation_bps": 15.583685084309481,
+                "arrival_shortfall_bps": 19.796365062472486,
+                "weighted_participation": 0.0033194042880475933
+              }
+            },
+            "feedback": {
+              "days_completed": 29,
+              "mean_unfilled_pct": 0.06211967921185235,
+              "worst_unfilled_pct": 1.8635903763555708,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 1,
+              "mean_timing_shortage_pct": 0.06211967921185235,
+              "mean_cumulative_advance_pct": 6.319058177951655e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -0.8797425717454248,
+                "full_order_absolute_deviation_bps": 15.583685084309481,
+                "arrival_shortfall_bps": 19.796365062472486,
+                "weighted_participation": 0.0033194042880475933
+              }
+            },
+            "no_feedback": {
+              "days_completed": 29,
+              "mean_unfilled_pct": 0.06211967921185235,
+              "worst_unfilled_pct": 1.8635903763555708,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 1,
+              "mean_timing_shortage_pct": 0.06211967921185235,
+              "mean_cumulative_advance_pct": 6.319058177951655e-17
+            }
+          },
+          "feedback_diagnostics": {
+            "trigger_days": 0,
+            "rescued_vs_historical_days": 0,
+            "false_alarm_days": 0,
+            "triggered_but_incomplete_days": 0,
+            "untriggered_timing_failure_days": 1,
+            "triggered_timing_failure_days": 0,
+            "feedback_complete_fixed_incomplete_days": 0,
+            "fixed_complete_feedback_incomplete_days": 0,
+            "feedback_complete_ablation_incomplete_days": 0,
+            "ablation_complete_feedback_incomplete_days": 0
+          },
+          "feedback_minus_fixed_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_ablation_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_fixed_mean_advance_percentage_points": 0.0,
+          "descriptive_95pct_interval_percentage_points": [
+            0.0,
+            0.0
+          ],
+          "interval_note": "Paired calendar-day blocks, separately by asset."
+        },
+        "0.05": {
+          "days": 30,
+          "common_complete_days": 30,
+          "common_complete_dates": [
+            "2026-09-01",
+            "2026-09-02",
+            "2026-09-03",
+            "2026-09-04",
+            "2026-09-05",
+            "2026-09-06",
+            "2026-09-07",
+            "2026-09-08",
+            "2026-09-09",
+            "2026-09-10",
+            "2026-09-11",
+            "2026-09-12",
+            "2026-09-13",
+            "2026-09-14",
+            "2026-09-15",
+            "2026-09-16",
+            "2026-09-17",
+            "2026-09-18",
+            "2026-09-19",
+            "2026-09-20",
+            "2026-09-21",
+            "2026-09-22",
+            "2026-09-23",
+            "2026-09-24",
+            "2026-09-25",
+            "2026-09-26",
+            "2026-09-27",
+            "2026-09-28",
+            "2026-09-29",
+            "2026-09-30"
+          ],
+          "methods": {
+            "twap": {
+              "days_completed": 30,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 5.871777358058091,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -2.67648811185713,
+                "full_order_absolute_deviation_bps": 19.426410123790948,
+                "arrival_shortfall_bps": 16.021717241423502,
+                "weighted_participation": 0.003776316484691399
+              }
+            },
+            "historical": {
+              "days_completed": 30,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 6.319058177951655e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -0.7591174214926307,
+                "full_order_absolute_deviation_bps": 15.19128675517652,
+                "arrival_shortfall_bps": 18.02612814460902,
+                "weighted_participation": 0.0037390614936360883
+              }
+            },
+            "fixed_early": {
+              "days_completed": 30,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 6.319058177951655e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -0.7591174214926307,
+                "full_order_absolute_deviation_bps": 15.19128675517652,
+                "arrival_shortfall_bps": 18.02612814460902,
+                "weighted_participation": 0.0037390614936360883
+              }
+            },
+            "feedback": {
+              "days_completed": 30,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 6.319058177951655e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -0.7591174214926307,
+                "full_order_absolute_deviation_bps": 15.19128675517652,
+                "arrival_shortfall_bps": 18.02612814460902,
+                "weighted_participation": 0.0037390614936360883
+              }
+            },
+            "no_feedback": {
+              "days_completed": 30,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 6.319058177951655e-17
+            }
+          },
+          "feedback_diagnostics": {
+            "trigger_days": 0,
+            "rescued_vs_historical_days": 0,
+            "false_alarm_days": 0,
+            "triggered_but_incomplete_days": 0,
+            "untriggered_timing_failure_days": 0,
+            "triggered_timing_failure_days": 0,
+            "feedback_complete_fixed_incomplete_days": 0,
+            "fixed_complete_feedback_incomplete_days": 0,
+            "feedback_complete_ablation_incomplete_days": 0,
+            "ablation_complete_feedback_incomplete_days": 0
+          },
+          "feedback_minus_fixed_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_ablation_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_fixed_mean_advance_percentage_points": 0.0,
+          "descriptive_95pct_interval_percentage_points": [
+            0.0,
+            0.0
+          ],
+          "interval_note": "Paired calendar-day blocks, separately by asset."
+        }
+      },
+      "ETHUSDT": {
+        "0.01": {
+          "days": 30,
+          "common_complete_days": 25,
+          "common_complete_dates": [
+            "2026-09-01",
+            "2026-09-02",
+            "2026-09-03",
+            "2026-09-04",
+            "2026-09-07",
+            "2026-09-08",
+            "2026-09-09",
+            "2026-09-10",
+            "2026-09-11",
+            "2026-09-12",
+            "2026-09-13",
+            "2026-09-14",
+            "2026-09-15",
+            "2026-09-16",
+            "2026-09-17",
+            "2026-09-18",
+            "2026-09-19",
+            "2026-09-20",
+            "2026-09-21",
+            "2026-09-23",
+            "2026-09-24",
+            "2026-09-25",
+            "2026-09-27",
+            "2026-09-28",
+            "2026-09-29"
+          ],
+          "methods": {
+            "twap": {
+              "days_completed": 25,
+              "mean_unfilled_pct": 0.5152903794157685,
+              "worst_unfilled_pct": 12.800941270508371,
+              "total_capacity_shortage_days": 1,
+              "timing_only_failure_days": 4,
+              "mean_timing_shortage_pct": 0.18601938204943488,
+              "mean_cumulative_advance_pct": 6.247198699138226,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -4.017363564545607,
+                "full_order_absolute_deviation_bps": 28.154989889596973,
+                "arrival_shortfall_bps": 5.640817079063476,
+                "weighted_participation": 0.005058627920297907
+              }
+            },
+            "historical": {
+              "days_completed": 25,
+              "mean_unfilled_pct": 1.2739437220093583,
+              "worst_unfilled_pct": 26.525998882298786,
+              "total_capacity_shortage_days": 1,
+              "timing_only_failure_days": 4,
+              "mean_timing_shortage_pct": 0.9446727246430248,
+              "mean_cumulative_advance_pct": -1.0920960925710058e-16,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -1.9214307043490482,
+                "full_order_absolute_deviation_bps": 19.841824989688693,
+                "arrival_shortfall_bps": 7.919739392648761,
+                "weighted_participation": 0.004870948491072207
+              }
+            },
+            "fixed_early": {
+              "days_completed": 25,
+              "mean_unfilled_pct": 1.267320678934449,
+              "worst_unfilled_pct": 26.4281846761455,
+              "total_capacity_shortage_days": 1,
+              "timing_only_failure_days": 4,
+              "mean_timing_shortage_pct": 0.9380496815681156,
+              "mean_cumulative_advance_pct": 0.11872405060300376,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -1.933215900077201,
+                "full_order_absolute_deviation_bps": 19.940853369000067,
+                "arrival_shortfall_bps": 7.9051819614356145,
+                "weighted_participation": 0.004871739472229763
+              }
+            },
+            "feedback": {
+              "days_completed": 25,
+              "mean_unfilled_pct": 1.2739437220093583,
+              "worst_unfilled_pct": 26.525998882298786,
+              "total_capacity_shortage_days": 1,
+              "timing_only_failure_days": 4,
+              "mean_timing_shortage_pct": 0.9446727246430248,
+              "mean_cumulative_advance_pct": -1.0920960925710058e-16,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -1.9214307043490482,
+                "full_order_absolute_deviation_bps": 19.841824989688693,
+                "arrival_shortfall_bps": 7.919739392648761,
+                "weighted_participation": 0.004870948491072207
+              }
+            },
+            "no_feedback": {
+              "days_completed": 25,
+              "mean_unfilled_pct": 1.2739437220093583,
+              "worst_unfilled_pct": 26.525998882298786,
+              "total_capacity_shortage_days": 1,
+              "timing_only_failure_days": 4,
+              "mean_timing_shortage_pct": 0.9446727246430248,
+              "mean_cumulative_advance_pct": -1.0920960925710058e-16
+            }
+          },
+          "feedback_diagnostics": {
+            "trigger_days": 0,
+            "rescued_vs_historical_days": 0,
+            "false_alarm_days": 0,
+            "triggered_but_incomplete_days": 0,
+            "untriggered_timing_failure_days": 4,
+            "triggered_timing_failure_days": 0,
+            "feedback_complete_fixed_incomplete_days": 0,
+            "fixed_complete_feedback_incomplete_days": 0,
+            "feedback_complete_ablation_incomplete_days": 0,
+            "ablation_complete_feedback_incomplete_days": 0
+          },
+          "feedback_minus_fixed_mean_unfilled_percentage_points": 0.006623043074909333,
+          "feedback_minus_ablation_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_fixed_mean_advance_percentage_points": -0.11872405060300387,
+          "descriptive_95pct_interval_percentage_points": [
+            8.981360865397091e-05,
+            0.012745441676314724
+          ],
+          "interval_note": "Paired calendar-day blocks, separately by asset."
+        },
+        "0.05": {
+          "days": 30,
+          "common_complete_days": 30,
+          "common_complete_dates": [
+            "2026-09-01",
+            "2026-09-02",
+            "2026-09-03",
+            "2026-09-04",
+            "2026-09-05",
+            "2026-09-06",
+            "2026-09-07",
+            "2026-09-08",
+            "2026-09-09",
+            "2026-09-10",
+            "2026-09-11",
+            "2026-09-12",
+            "2026-09-13",
+            "2026-09-14",
+            "2026-09-15",
+            "2026-09-16",
+            "2026-09-17",
+            "2026-09-18",
+            "2026-09-19",
+            "2026-09-20",
+            "2026-09-21",
+            "2026-09-22",
+            "2026-09-23",
+            "2026-09-24",
+            "2026-09-25",
+            "2026-09-26",
+            "2026-09-27",
+            "2026-09-28",
+            "2026-09-29",
+            "2026-09-30"
+          ],
+          "methods": {
+            "twap": {
+              "days_completed": 30,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 6.247198699138226,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -4.03648979377865,
+                "full_order_absolute_deviation_bps": 25.70878709906496,
+                "arrival_shortfall_bps": 8.191215086418811,
+                "weighted_participation": 0.006433217805548016
+              }
+            },
+            "historical": {
+              "days_completed": 30,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": -1.0920960925710058e-16,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -2.5641341001791207,
+                "full_order_absolute_deviation_bps": 18.475229846364627,
+                "arrival_shortfall_bps": 9.817412791978416,
+                "weighted_participation": 0.006374100472591266
+              }
+            },
+            "fixed_early": {
+              "days_completed": 30,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": -1.0920960925710058e-16,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -2.5641341001791207,
+                "full_order_absolute_deviation_bps": 18.475229846364627,
+                "arrival_shortfall_bps": 9.817412791978416,
+                "weighted_participation": 0.006374100472591266
+              }
+            },
+            "feedback": {
+              "days_completed": 30,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": -1.0920960925710058e-16,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -2.5641341001791207,
+                "full_order_absolute_deviation_bps": 18.475229846364627,
+                "arrival_shortfall_bps": 9.817412791978416,
+                "weighted_participation": 0.006374100472591266
+              }
+            },
+            "no_feedback": {
+              "days_completed": 30,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": -1.0920960925710058e-16
+            }
+          },
+          "feedback_diagnostics": {
+            "trigger_days": 0,
+            "rescued_vs_historical_days": 0,
+            "false_alarm_days": 0,
+            "triggered_but_incomplete_days": 0,
+            "untriggered_timing_failure_days": 0,
+            "triggered_timing_failure_days": 0,
+            "feedback_complete_fixed_incomplete_days": 0,
+            "fixed_complete_feedback_incomplete_days": 0,
+            "feedback_complete_ablation_incomplete_days": 0,
+            "ablation_complete_feedback_incomplete_days": 0
+          },
+          "feedback_minus_fixed_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_ablation_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_fixed_mean_advance_percentage_points": 0.0,
+          "descriptive_95pct_interval_percentage_points": [
+            0.0,
+            0.0
+          ],
+          "interval_note": "Paired calendar-day blocks, separately by asset."
+        }
+      }
+    },
+    "validation": {
+      "BTCUSDT": {
+        "0.01": {
+          "days": 23,
+          "common_complete_days": 18,
+          "common_complete_dates": [
+            "2026-10-01",
+            "2026-10-02",
+            "2026-10-05",
+            "2026-10-06",
+            "2026-10-07",
+            "2026-10-08",
+            "2026-10-09",
+            "2026-10-10",
+            "2026-10-11",
+            "2026-10-13",
+            "2026-10-14",
+            "2026-10-15",
+            "2026-10-16",
+            "2026-10-19",
+            "2026-10-20",
+            "2026-10-21",
+            "2026-10-22",
+            "2026-10-23"
+          ],
+          "methods": {
+            "twap": {
+              "days_completed": 21,
+              "mean_unfilled_pct": 0.021133250182125522,
+              "worst_unfilled_pct": 0.34820519040001496,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 2,
+              "mean_timing_shortage_pct": 0.021133250182125522,
+              "mean_cumulative_advance_pct": 4.388182673678835,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -0.759472056723455,
+                "full_order_absolute_deviation_bps": 11.669679861401884,
+                "arrival_shortfall_bps": -6.356108507329434,
+                "weighted_participation": 0.003202725688538765
+              }
+            },
+            "historical": {
+              "days_completed": 18,
+              "mean_unfilled_pct": 0.08180048345805774,
+              "worst_unfilled_pct": 0.8408188411488625,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 5,
+              "mean_timing_shortage_pct": 0.08180048345805774,
+              "mean_cumulative_advance_pct": 2.0811814429620984e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -1.0550398420324418,
+                "full_order_absolute_deviation_bps": 9.879037635722606,
+                "arrival_shortfall_bps": -6.629512759748646,
+                "weighted_participation": 0.003051836981335068
+              }
+            },
+            "fixed_early": {
+              "days_completed": 18,
+              "mean_unfilled_pct": 0.08180048345805774,
+              "worst_unfilled_pct": 0.8408188411488625,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 5,
+              "mean_timing_shortage_pct": 0.08180048345805774,
+              "mean_cumulative_advance_pct": 2.0811814429620984e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -1.0550398420324418,
+                "full_order_absolute_deviation_bps": 9.879037635722606,
+                "arrival_shortfall_bps": -6.629512759748646,
+                "weighted_participation": 0.003051836981335068
+              }
+            },
+            "feedback": {
+              "days_completed": 18,
+              "mean_unfilled_pct": 0.08180048345805774,
+              "worst_unfilled_pct": 0.8408188411488625,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 5,
+              "mean_timing_shortage_pct": 0.08180048345805774,
+              "mean_cumulative_advance_pct": 2.0811814429620984e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -1.0550398420324418,
+                "full_order_absolute_deviation_bps": 9.879037635722606,
+                "arrival_shortfall_bps": -6.629512759748646,
+                "weighted_participation": 0.003051836981335068
+              }
+            },
+            "no_feedback": {
+              "days_completed": 18,
+              "mean_unfilled_pct": 0.08180048345805774,
+              "worst_unfilled_pct": 0.8408188411488625,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 5,
+              "mean_timing_shortage_pct": 0.08180048345805774,
+              "mean_cumulative_advance_pct": 2.0811814429620984e-17
+            }
+          },
+          "feedback_diagnostics": {
+            "trigger_days": 0,
+            "rescued_vs_historical_days": 0,
+            "false_alarm_days": 0,
+            "triggered_but_incomplete_days": 0,
+            "untriggered_timing_failure_days": 5,
+            "triggered_timing_failure_days": 0,
+            "feedback_complete_fixed_incomplete_days": 0,
+            "fixed_complete_feedback_incomplete_days": 0,
+            "feedback_complete_ablation_incomplete_days": 0,
+            "ablation_complete_feedback_incomplete_days": 0
+          },
+          "feedback_minus_fixed_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_ablation_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_fixed_mean_advance_percentage_points": 0.0,
+          "descriptive_95pct_interval_percentage_points": [
+            0.0,
+            0.0
+          ],
+          "interval_note": "Paired calendar-day blocks, separately by asset."
+        },
+        "0.05": {
+          "days": 23,
+          "common_complete_days": 23,
+          "common_complete_dates": [
+            "2026-10-01",
+            "2026-10-02",
+            "2026-10-03",
+            "2026-10-04",
+            "2026-10-05",
+            "2026-10-06",
+            "2026-10-07",
+            "2026-10-08",
+            "2026-10-09",
+            "2026-10-10",
+            "2026-10-11",
+            "2026-10-12",
+            "2026-10-13",
+            "2026-10-14",
+            "2026-10-15",
+            "2026-10-16",
+            "2026-10-17",
+            "2026-10-18",
+            "2026-10-19",
+            "2026-10-20",
+            "2026-10-21",
+            "2026-10-22",
+            "2026-10-23"
+          ],
+          "methods": {
+            "twap": {
+              "days_completed": 23,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 4.388182673678835,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -0.41128095733948694,
+                "full_order_absolute_deviation_bps": 9.554732447137168,
+                "arrival_shortfall_bps": -8.042823598921128,
+                "weighted_participation": 0.004162592600318475
+              }
+            },
+            "historical": {
+              "days_completed": 23,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 2.0811814429620984e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -1.3670313699745815,
+                "full_order_absolute_deviation_bps": 8.362500275687081,
+                "arrival_shortfall_bps": -8.977934097535567,
+                "weighted_participation": 0.004157629910841539
+              }
+            },
+            "fixed_early": {
+              "days_completed": 23,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 2.0811814429620984e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -1.3670313699745815,
+                "full_order_absolute_deviation_bps": 8.362500275687081,
+                "arrival_shortfall_bps": -8.977934097535567,
+                "weighted_participation": 0.004157629910841539
+              }
+            },
+            "feedback": {
+              "days_completed": 23,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 2.0811814429620984e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": -1.3670313699745815,
+                "full_order_absolute_deviation_bps": 8.362500275687081,
+                "arrival_shortfall_bps": -8.977934097535567,
+                "weighted_participation": 0.004157629910841539
+              }
+            },
+            "no_feedback": {
+              "days_completed": 23,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 2.0811814429620984e-17
+            }
+          },
+          "feedback_diagnostics": {
+            "trigger_days": 0,
+            "rescued_vs_historical_days": 0,
+            "false_alarm_days": 0,
+            "triggered_but_incomplete_days": 0,
+            "untriggered_timing_failure_days": 0,
+            "triggered_timing_failure_days": 0,
+            "feedback_complete_fixed_incomplete_days": 0,
+            "fixed_complete_feedback_incomplete_days": 0,
+            "feedback_complete_ablation_incomplete_days": 0,
+            "ablation_complete_feedback_incomplete_days": 0
+          },
+          "feedback_minus_fixed_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_ablation_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_fixed_mean_advance_percentage_points": 0.0,
+          "descriptive_95pct_interval_percentage_points": [
+            0.0,
+            0.0
+          ],
+          "interval_note": "Paired calendar-day blocks, separately by asset."
+        }
+      },
+      "ETHUSDT": {
+        "0.01": {
+          "days": 23,
+          "common_complete_days": 15,
+          "common_complete_dates": [
+            "2026-10-01",
+            "2026-10-02",
+            "2026-10-06",
+            "2026-10-07",
+            "2026-10-08",
+            "2026-10-11",
+            "2026-10-13",
+            "2026-10-14",
+            "2026-10-15",
+            "2026-10-16",
+            "2026-10-19",
+            "2026-10-20",
+            "2026-10-21",
+            "2026-10-22",
+            "2026-10-23"
+          ],
+          "methods": {
+            "twap": {
+              "days_completed": 15,
+              "mean_unfilled_pct": 2.3792013135987973,
+              "worst_unfilled_pct": 31.362052211927665,
+              "total_capacity_shortage_days": 3,
+              "timing_only_failure_days": 5,
+              "mean_timing_shortage_pct": 0.29959889475723345,
+              "mean_cumulative_advance_pct": 3.726812692000476,
+              "common_complete_prices": {
+                "full_order_deviation_bps": 4.623544727412334,
+                "full_order_absolute_deviation_bps": 29.54685550883999,
+                "arrival_shortfall_bps": -23.18636627696994,
+                "weighted_participation": 0.005573654501920355
+              }
+            },
+            "historical": {
+              "days_completed": 15,
+              "mean_unfilled_pct": 2.950610112717223,
+              "worst_unfilled_pct": 30.028053383115292,
+              "total_capacity_shortage_days": 3,
+              "timing_only_failure_days": 5,
+              "mean_timing_shortage_pct": 0.8710076938756599,
+              "mean_cumulative_advance_pct": 5.409271742284573e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": 4.644432178840953,
+                "full_order_absolute_deviation_bps": 24.636202620022274,
+                "arrival_shortfall_bps": -23.108508101955007,
+                "weighted_participation": 0.0054248228725930995
+              }
+            },
+            "fixed_early": {
+              "days_completed": 15,
+              "mean_unfilled_pct": 2.9244584515025607,
+              "worst_unfilled_pct": 29.82600816343509,
+              "total_capacity_shortage_days": 3,
+              "timing_only_failure_days": 5,
+              "mean_timing_shortage_pct": 0.8448560326609973,
+              "mean_cumulative_advance_pct": 0.11335441212243395,
+              "common_complete_prices": {
+                "full_order_deviation_bps": 4.684927272654866,
+                "full_order_absolute_deviation_bps": 24.674077435219882,
+                "arrival_shortfall_bps": -23.069663514576916,
+                "weighted_participation": 0.005423526011695843
+              }
+            },
+            "feedback": {
+              "days_completed": 15,
+              "mean_unfilled_pct": 2.950610112717223,
+              "worst_unfilled_pct": 30.028053383115292,
+              "total_capacity_shortage_days": 3,
+              "timing_only_failure_days": 5,
+              "mean_timing_shortage_pct": 0.8710076938756599,
+              "mean_cumulative_advance_pct": 5.409271742284573e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": 4.644432178840953,
+                "full_order_absolute_deviation_bps": 24.636202620022274,
+                "arrival_shortfall_bps": -23.108508101955007,
+                "weighted_participation": 0.0054248228725930995
+              }
+            },
+            "no_feedback": {
+              "days_completed": 15,
+              "mean_unfilled_pct": 2.950610112717223,
+              "worst_unfilled_pct": 30.028053383115292,
+              "total_capacity_shortage_days": 3,
+              "timing_only_failure_days": 5,
+              "mean_timing_shortage_pct": 0.8710076938756599,
+              "mean_cumulative_advance_pct": 5.409271742284573e-17
+            }
+          },
+          "feedback_diagnostics": {
+            "trigger_days": 0,
+            "rescued_vs_historical_days": 0,
+            "false_alarm_days": 0,
+            "triggered_but_incomplete_days": 0,
+            "untriggered_timing_failure_days": 5,
+            "triggered_timing_failure_days": 0,
+            "feedback_complete_fixed_incomplete_days": 0,
+            "fixed_complete_feedback_incomplete_days": 0,
+            "feedback_complete_ablation_incomplete_days": 0,
+            "ablation_complete_feedback_incomplete_days": 0
+          },
+          "feedback_minus_fixed_mean_unfilled_percentage_points": 0.02615166121466249,
+          "feedback_minus_ablation_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_fixed_mean_advance_percentage_points": -0.1133544121224339,
+          "descriptive_95pct_interval_percentage_points": [
+            0.010760706713685172,
+            0.049033170735706996
+          ],
+          "interval_note": "Paired calendar-day blocks, separately by asset."
+        },
+        "0.05": {
+          "days": 23,
+          "common_complete_days": 23,
+          "common_complete_dates": [
+            "2026-10-01",
+            "2026-10-02",
+            "2026-10-03",
+            "2026-10-04",
+            "2026-10-05",
+            "2026-10-06",
+            "2026-10-07",
+            "2026-10-08",
+            "2026-10-09",
+            "2026-10-10",
+            "2026-10-11",
+            "2026-10-12",
+            "2026-10-13",
+            "2026-10-14",
+            "2026-10-15",
+            "2026-10-16",
+            "2026-10-17",
+            "2026-10-18",
+            "2026-10-19",
+            "2026-10-20",
+            "2026-10-21",
+            "2026-10-22",
+            "2026-10-23"
+          ],
+          "methods": {
+            "twap": {
+              "days_completed": 23,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 3.726812692000476,
+              "common_complete_prices": {
+                "full_order_deviation_bps": 3.6504332009912814,
+                "full_order_absolute_deviation_bps": 22.77270225197849,
+                "arrival_shortfall_bps": -23.659621380502298,
+                "weighted_participation": 0.009254331194924671
+              }
+            },
+            "historical": {
+              "days_completed": 23,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 5.409271742284573e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": 2.705101218279019,
+                "full_order_absolute_deviation_bps": 18.844364232165766,
+                "arrival_shortfall_bps": -24.559555676218505,
+                "weighted_participation": 0.009088416405570928
+              }
+            },
+            "fixed_early": {
+              "days_completed": 23,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 5.409271742284573e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": 2.705101218279019,
+                "full_order_absolute_deviation_bps": 18.844364232165766,
+                "arrival_shortfall_bps": -24.559555676218505,
+                "weighted_participation": 0.009088416405570928
+              }
+            },
+            "feedback": {
+              "days_completed": 23,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 5.409271742284573e-17,
+              "common_complete_prices": {
+                "full_order_deviation_bps": 2.705101218279019,
+                "full_order_absolute_deviation_bps": 18.844364232165766,
+                "arrival_shortfall_bps": -24.559555676218505,
+                "weighted_participation": 0.009088416405570928
+              }
+            },
+            "no_feedback": {
+              "days_completed": 23,
+              "mean_unfilled_pct": 0.0,
+              "worst_unfilled_pct": 0.0,
+              "total_capacity_shortage_days": 0,
+              "timing_only_failure_days": 0,
+              "mean_timing_shortage_pct": 0.0,
+              "mean_cumulative_advance_pct": 5.409271742284573e-17
+            }
+          },
+          "feedback_diagnostics": {
+            "trigger_days": 0,
+            "rescued_vs_historical_days": 0,
+            "false_alarm_days": 0,
+            "triggered_but_incomplete_days": 0,
+            "untriggered_timing_failure_days": 0,
+            "triggered_timing_failure_days": 0,
+            "feedback_complete_fixed_incomplete_days": 0,
+            "fixed_complete_feedback_incomplete_days": 0,
+            "feedback_complete_ablation_incomplete_days": 0,
+            "ablation_complete_feedback_incomplete_days": 0
+          },
+          "feedback_minus_fixed_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_ablation_mean_unfilled_percentage_points": 0.0,
+          "feedback_minus_fixed_mean_advance_percentage_points": 0.0,
+          "descriptive_95pct_interval_percentage_points": [
+            0.0,
+            0.0
+          ],
+          "interval_note": "Paired calendar-day blocks, separately by asset."
+        }
+      }
+    }
+  },
+  "max_suffix_identity_error": 2.2737367544323206e-13
+}

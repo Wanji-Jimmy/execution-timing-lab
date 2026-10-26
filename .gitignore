@@ -1,0 +1,7 @@
+.venv/
+.cache/
+__pycache__/
+.DS_Store
+data/buckets.csv
+data/validation_buckets.csv
+data/equities/

@@ -1,0 +1,86 @@
+# Execution timing pilot
+
+Plan fixed on 25 October 2026 before inspecting pilot results.
+
+Question: does a better forecast of the intraday volume profile also give a smaller deviation from the market's volume-weighted average price (VWAP)?
+
+- Source: official Binance spot monthly 1-minute klines, BTCUSDT and ETHUSDT, June–September 2026. Verify each archive against its official SHA-256 checksum. This is historical reference-price research, not a fill simulation.
+- Window: 08:00–16:00 UTC every calendar day, grouped into 96 five-minute buckets. June supplies warm-up history; evaluation is 1 July–30 September 2026. This fixed clock is a research convention for a 24-hour market, not an exchange session.
+- A bucket price is sum(quote volume) / sum(base volume), not a mean of closes. A day is excluded if any required minute is missing/duplicated/invalid or a bucket has no positive volume; exclusions remain in the data manifest.
+- Three schedules: equal quantities (TWAP), mean of the preceding 20 valid daily volume-share profiles, and a weighted mean of those same 20 profiles (EWMA alpha = 0.2). All weights are fixed before the execution window; no same-day volume is used in a decision.
+- Each schedule buys the same base quantity, notionally 1,000,000 USDT divided by the opening price at 08:00 UTC. USDT is the quote unit, not an assumption of an exact USD conversion. Bucket completion at the historical bucket VWAP is a counterfactual assumption, not evidence of achievable fills.
+- Main outcome: mean absolute deviation from that day's market VWAP in basis points. Also show signed deviation, arrival-price shortfall, and daily volume-share RMSE. Lower forecast error need not mean lower execution deviation.
+- Exact attribution: sum((schedule share - realised market-volume share) * bucket price) equals schedule price minus market VWAP. Verify this identity for every day and strategy.
+- Size diagnostic: scheduled quantity / observed historical bucket volume. Report maximum and fraction of buckets above 1% and 5%; these are arbitrary diagnostic thresholds, not proven execution capacity limits. Do not erase difficult days.
+- No spreads, fees, own market impact, queue position, limit-order fills, or venue routing are observed. A constant fee adds the same basis-point cost to every schedule; this pilot makes no net-cost-saving or profit claim.
+- Compare methods on paired dates. Report a descriptive paired moving-block bootstrap interval (7-day blocks, 2,000 draws, seed 20261025) for each learned schedule's absolute-error difference versus TWAP, separately by asset. This is a short exploratory sample, not proof of future superiority.
+- Freeze the above choices for the pilot. Retain all three methods and both assets whatever their results. Do not tune against July–September results or call historical data a pristine blind test.
+
+Sources: https://github.com/binance/binance-public-data and https://github.com/Shivesh777/CALM . The latter motivates evaluating forecasts against execution outcomes; this project does not implement or reproduce CALM.
+
+## Exploratory liquidity amendment
+
+Added after viewing the first results on 25 October 2026. The planned BTC participation maximum was 42.3% for the 20-day profile, so historical bucket-VWAP completion needed an explicit stress check. This extension is not part of the original frozen design and does not create a fresh holdout.
+
+Keep the same schedules, dates and 1,000,000 USDT initial notional. Separately cap a hypothetical fill at 1% and 5% of each bucket's observed historical base volume. Attempt the scheduled amount plus any backlog, carry unfilled quantity forward, and leave the terminal remainder unfilled. Realised current-bucket volume enters only this ex-post fill-cap assumption, never the schedule. This does not model queues or prove real participation capacity.
+
+Report completion frequency, mean completion fraction and worst completion fraction. A partially completed order has no full-order execution comparison; do not advertise its favourable filled price against a completed benchmark. No parameter search or new forecast model is added.
+
+## Feedback release study — frozen before its first run
+
+Recorded 25 October 2026 (client date), before implementing the feedback policy or retrieving its October validation sample. The original study and its outputs remain available. July–September has already informed this design and is not an untouched test.
+
+Question: does current-day volume feedback improve execution beyond simply releasing orders earlier? The existing backlog loop already catches up eligible orders. The new decision is whether to release future planned quantity sooner, under the same participation cap.
+
+- Reuse the same assets, five-minute buckets, 08:00–16:00 UTC window, initial 1,000,000 USDT notional and 1% / 5% capacity assumptions.
+- Use the preceding 20 valid days for historical volume shares and absolute bucket-volume means. At bucket t, the activity estimate is `(1 + observed_volume_before_t / historical_mean_volume_before_t) / 2`; set it to 1 at the first bucket. The smoothing coefficient is fixed at 0.5, without a search.
+- Predicted capacity after the current bucket is the activity estimate times the cap times the historical mean volume of later buckets. Cumulative released quantity is `min(Q, max(previous_release, Q * historical_cumulative_share[t], Q - predicted_capacity_after_t))`. Actual current-bucket volume is used only after the release decision, to calculate hypothetical fills.
+- Main policies: TWAP, historical volume profile, fixed early release, and feedback release. Fixed early release uses `Q * (alpha + (1-alpha) * historical_cumulative_share[t])`. For each asset and cap, choose alpha once by matching the feedback policy's mean cumulative advance over July–August 2026; freeze it thereafter. The matching calculation uses release amounts, not profits. Do not match individual validation dates.
+- One diagnostic ablation fixes the feedback activity estimate at 1. It measures the contribution of current-day information and is not an extra optimized model. Immediate release of the full order supplies the algebraic capacity bound `min(Q, cap * sum(volume))`, not a claimed best real-market strategy.
+- July–August is calibration, September is an already-seen mechanism check. Reserve 1–23 October 2026 as the new historical validation interval, retrieving every required daily official archive and checksum only after this protocol is saved. October days enter the rolling history only after their own decisions. An unavailable archive is a data blocker, not a reason to quietly select another date.
+- Keep all complete, valid asset-days and report any validation exclusions. No post-result changes to windows, caps, smoothing or order size to improve performance. Any correctness repair must be recorded and all comparisons rerun consistently.
+- Report completion count, mean/worst unfilled quantity, total-capacity shortage versus additional timing shortage, and trigger/rescue/false-alarm outcomes. A false alarm means the historical policy would already have completed; it need not imply the adjusted reference price was worse.
+- Compare prices only on the same dates where all four main policies complete. Label these conditional results and show their count. Keep partial orders out of full-order price rankings. Do not score incomplete orders as zero cost.
+- Report quantity-weighted participation as a concentration proxy, not actual cost. No fitted impact model or invented spread is added. Retain the reference-VWAP assumptions and their limitations.
+- Paired uncertainty summaries, if shown, use calendar-day blocks. BTC and ETH must not be treated as independent observations on the same date. Any pooled resampling must draw dates jointly across assets; separate-asset summaries are acceptable. Intervals remain descriptive in this short sample.
+- Mathematical checks: quantity conservation, monotone cumulative release, cap compliance, exact suffix backlog identity, the immediate-release completion bound, and future-volume perturbations leaving earlier release decisions unchanged. Matching alpha must remain unchanged when validation observations change.
+
+The design follows a simple diagnostic: an order can miss its deadline even when total capacity is sufficient, because some quantity is released too late. Releasing everything immediately gives the completion bound in this model, so feedback must be compared with a fixed early-release schedule to test whether current-day information adds value. [Busseti–Boyd](https://stanford.edu/~boyd/papers/vwap_opt_exec.html) motivates updating schedules with new information; [Markov–Mazur–Saltz](https://arxiv.org/html/1409.1441v1) informs the progress-intervention question. Their optimizers are not implemented here. The empirical rule is not an optimal controller or a guaranteed completion probability.
+
+### First evaluation record
+
+All 46 October daily archives passed official checksum verification, giving 46 valid asset-days and no exclusions. Python's initial certificate-store error was repaired by using the system CA bundle, without disabling TLS verification or changing the reserved dates; the failed acquisition manifest is retained outside the public project.
+
+The first feedback evaluation found no early-release triggers on the October validation interval. Its completion and price outcomes equal the historical policy. At the 1% cap, TWAP completes 21 BTC dates versus 18 for historical/feedback; all four policies complete 15 ETH dates. The matched fixed-early ETH policy has slightly lower mean residual than feedback. At the 5% cap all policies complete all validation dates.
+
+These outcomes are retained. The rule and parameters were not changed after inspecting validation. Charts use two explicitly post-selected explanatory cases: the largest timing-only residual and the largest total-capacity shortage. This selection is for explanation, not performance estimation. The full-sample tables retain every valid date. Cosmetic CLI output and documentation updates do not change the experiment.
+
+## Equity extension — 26 October 2026
+
+Question: how sensitive is the same order-release rule to the volume coverage used in its hypothetical fill cap? This extension follows the crypto failure analysis and a small equity data audit. It does not replace either.
+
+- Source: AlgoSeek's public Machine Learning for Trading companion minute bars. Fix EBAY and LULU before evaluating strategy outcomes: these were the two stocks available in the first bounded sample. Their 5 January 2021 data has already been inspected for field semantics, so that date belongs to warm-up, not evaluation.
+- Fix the first 40 regular US equity sessions from 4 January to 2 March 2021. Exclude weekends and the 18 January / 15 February holidays. The first 20 sessions are warm-up; evaluate the remaining 20. Missing or invalid sessions stay in the coverage report. Do not replace the date range or pick different stocks after seeing results. Full acquisition is not yet confirmed when recording this design.
+- Use 09:30 <= minute start < 16:00 America/New_York, aggregated into 78 five-minute buckets. This includes trades assigned to the opening minute but excludes records assigned to 16:00; call the benchmark the selected-window bar VWAP reference, not an auction-complete full-day VWAP. The fixed sample precedes the 2021 DST transition and contains no scheduled half-days.
+- Preserve the provider's paired fields: Volume/VolumeWeightPrice, FinraVolume/FinraVolumeWeightPrice, and TotalVolume/TotalVolumeWeightPrice. Check TotalVolume = Volume + FinraVolume. A zero-volume minute can have a blank VWAP; a missing minute is not assumed to be zero. Exclude invalid or nonpositive five-minute buckets from replay, with reasons. Raw prices and shares are used; corporate-action consistency across the lookback must be checked before interpreting absolute-volume forecasts.
+- Freeze notional at USD 1,000,000, converted to a common share quantity at the first reported trade of the 09:30 minute. Continuous share quantities are an approximation. The first trade is the arrival reference; minute VWAP is not known at arrival.
+- Reuse the existing four release rules. TWAP releases equally; historical weights average the preceding 20 valid daily TotalVolume-share profiles; fixed early release uses alpha=0.10, specified now without fitting; feedback uses the existing half-weight activity adjustment and only prior buckets. This simple equity control differs from the crypto matched-alpha experiment and must be labelled accordingly.
+- All release decisions and reference prices use the same Total fields. For each identical release path, replay once with cap * TotalVolume and once with cap * Volume (exchange-reported only), at fixed 1% and 5% caps. This isolates the accounting sensitivity of the cap; it does not assert that all off-exchange volume is available to our order or simulate routing between venues.
+- Hold the price benchmark fixed at the TotalVolume-weighted provider bar reference across the two capacity definitions. Report completion and unfilled quantity first. Compare full-order reference prices only on the intersection of dates where all four rules complete under both definitions; keep every valid date in completion statistics. Never score an incomplete order as zero cost.
+- Reuse conservation, cap compliance and the exact terminal-backlog identity. Add checks for stock minute coverage, field pairing, zero-volume minutes and exclusion of future sessions from history. Retain the original crypto outputs and tests.
+- No additional strategy search, deep learning, fitted impact, queue model or claimed profit. Twenty evaluation dates are a small historical test. Do not make cross-market causal claims by comparing 2021 equities with 2026 crypto.
+
+References: https://algoseek.com/ml-for-trading/ ; https://github.com/stefan-jansen/machine-learning-for-trading ; https://stanford.edu/~boyd/papers/vwap_opt_exec.html . Raw companion data remains local; a public download link is not blanket redistribution permission.
+
+Pre-evaluation data check: 80 complete stock-day files were acquired with ZIP member CRC32 verification and recorded SHA-256 hashes; each has all 390 selected minutes. Zero exchange-volume minutes are retained, and all five-minute exchange/Total buckets are positive. Reviewed issuer filings disclose no split or common-share unit reset during the sample: [EBAY 2021 10-K](https://www.sec.gov/Archives/edgar/data/1065088/000106508822000006/ebay-20211231.htm), [LULU FY2020 10-K](https://www.sec.gov/Archives/edgar/data/1397187/000139718721000009/lulu-20210131.htm), and [LULU Q1 2021 10-Q](https://www.sec.gov/Archives/edgar/data/1397187/000139718721000018/lulu-20210502.htm). No further price/volume adjustment is applied. This review does not independently certify the companion bundle's retrospective adjustment policy.
+
+
+### Equity first result and bounded diagnostic amendment
+
+The first USD 1m run completed on all 20 evaluation dates for both stocks, all four methods, both caps and both capacity scopes. The feedback rule never advanced the historical schedule. These results do not support a completion advantage for feedback or a completion-rate difference between the two volume definitions at this order size. The original outputs are retained privately before the following addition.
+
+After seeing that result, add one descriptive capacity diagnostic; keep every strategy, date, price and USD 1m run unchanged. For each fixed fractional release schedule (TWAP, historical and fixed early), let r[t] be the fraction released by bucket t, with r[-1] = 0. A quantity Q finishes exactly when every suffix satisfies `Q * (1 - r[j-1]) <= cap * sum(volume[j:])`. Therefore the ex-post maximum compatible quantity is the minimum of `cap * sum(volume[j:]) / (1 - r[j-1])` over positive denominators. Convert to initial USD notional using the same arrival price. Report minimum and median across dates, beside the total-volume upper bound; no search for a profitable size is performed.
+
+This formula is derived from the existing backlog identity. It uses the realised entire day's volume, so it is a retrospective headroom calculation, not a pre-trade capacity forecast or executable size guarantee. Do not apply the fixed-fraction formula to feedback, whose release fractions change with Q. Test the boundary on a hand-calculated three-bucket example and check below/above-threshold replay. This amendment is post-result analysis, not part of the frozen first equity evaluation.
+
+Publication maintenance, 26 October 2026: the equity entry point now stops before writing output when there are no usable evaluation records. The data setup instructions and references were clarified. No strategy or calculation changed, and the saved results were not rerun; their source hashes identify the files used for the original evaluation.
