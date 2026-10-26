@@ -6,8 +6,8 @@ from pathlib import Path
 
 import numpy as np
 
-from adaptive import METHODS, release_path, replay
-from equity import (ALPHA, BUCKETS, CAPS, PAIRS, REQUIRED, SCOPES, build_records,
+from study.adaptive import METHODS, release_path, replay
+from study.equity import (ALPHA, BUCKETS, CAPS, PAIRS, REQUIRED, SCOPES, build_records,
                     evaluate_record, fixed_schedule_capacity, load_session, run, sessions, summarize)
 
 

@@ -9,7 +9,11 @@ from pathlib import Path
 
 import numpy as np
 
-from analysis import BUCKETS, LOOKBACK, load_days, moving_block_interval
+if __package__ in (None, ""):
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from study.analysis import BUCKETS, LOOKBACK, load_days, moving_block_interval
 
 
 METHODS = ("twap", "historical", "fixed_early", "feedback")
@@ -287,14 +291,15 @@ def run(data_path, validation_path, output_dir):
                                  "first_trigger_bucket": int(triggers[0]) if len(triggers) else None,
                                  **scalar})
     paths = {"data/buckets.csv": Path(data_path), "data/validation_buckets.csv": Path(validation_path),
-             "protocol.md": Path(__file__).with_name("protocol.md"), "adaptive.py": Path(__file__)}
+             "docs/protocol.md": Path(__file__).resolve().parents[1] / "docs/protocol.md",
+             "study/adaptive.py": Path(__file__)}
     for label, path in (("data/manifest.json", Path(data_path).with_name("manifest.json")),
                         ("data/validation_manifest.json", Path(validation_path).with_name("validation_manifest.json"))):
         if path.exists():
             paths[label] = path
     period_results = _summary(rows)
     summary = {
-        "protocol": "protocol.md: Feedback release study", "notional_usdt": 1_000_000,
+        "protocol": "docs/protocol.md: Feedback release study", "notional_usdt": 1_000_000,
         "lookback_valid_days": LOOKBACK, "buckets_per_day": BUCKETS, "activity_smoothing": 0.5,
         "periods": {name: [a.isoformat(), b.isoformat()] for name, (a, b) in PERIODS.items()},
         "fixed_alpha": alphas, "validation_exclusions": exclusions,
@@ -327,10 +332,10 @@ def run(data_path, validation_path, output_dir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    root = Path(__file__).resolve().parent
+    root = Path(__file__).resolve().parents[1]
     parser.add_argument("--data", type=Path, default=root / "data/buckets.csv")
     parser.add_argument("--validation", type=Path, default=root / "data/validation_buckets.csv")
-    parser.add_argument("--output", type=Path, default=root)
+    parser.add_argument("--output", type=Path, default=root / "results/crypto")
     args = parser.parse_args()
     if not args.validation.with_name("validation_manifest.json").exists():
         parser.error("validation_manifest.json is required for the research CLI")
@@ -343,4 +348,4 @@ if __name__ == "__main__":
             triggers = group["feedback_diagnostics"]["trigger_days"]
             print(f"{asset} cap={float(cap):.0%}: {completed} of {group['days']}; "
                   f"feedback-minus-fixed unfilled={difference:+.4f} pp; triggers={triggers}")
-    print("See README.md for interpretation; full results: adaptive_results.json and adaptive_daily.csv.")
+    print("See docs/protocol.md for the earlier crypto study; outputs: adaptive_results.json and adaptive_daily.csv.")

@@ -9,9 +9,9 @@ from zipfile import ZipFile
 
 import numpy as np
 
-from analysis import capped_replay, evaluate, moving_block_interval, run, schedule
-from adaptive import fit_alpha, release_path, replay, run as run_adaptive
-from data import MINUTE, acquire, aggregate, period_days
+from study.analysis import capped_replay, evaluate, moving_block_interval, run, schedule
+from study.adaptive import fit_alpha, release_path, replay, run as run_adaptive
+from study.data import MINUTE, acquire, aggregate, period_days
 
 
 class ExecutionAnalysisTests(unittest.TestCase):
@@ -61,7 +61,7 @@ class ExecutionAnalysisTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             for changed in (False, True):
                 output = Path(temporary) / str(changed)
-                with patch("analysis.load_days", return_value=fixture(changed)):
+                with patch("study.analysis.load_days", return_value=fixture(changed)):
                     run("unused.csv", output)
                 with (output / "daily_results.csv").open(newline="") as source:
                     first_day_prices.append({
@@ -331,7 +331,7 @@ class FeedbackReleaseTests(unittest.TestCase):
                 new = observations(date(2026, 10, 1), 23, changed)
                 new_path.write_text(f"synthetic validation fixture: {changed}\n")
                 output = root / str(changed)
-                with patch("adaptive.load_days", side_effect=[old, new]):
+                with patch("study.adaptive.load_days", side_effect=[old, new]):
                     summaries.append(run_adaptive(old_path, new_path, output))
                 with (output / "adaptive_daily.csv").open(newline="") as source:
                     rows = list(csv.DictReader(source))
@@ -402,8 +402,8 @@ class DailyArchiveTests(unittest.TestCase):
         name = "BTCUSDT-1m-2026-10-01.zip"
         checksum = f"{'0' * 64}  {name}\n".encode()
         with tempfile.TemporaryDirectory() as directory:
-            with patch("data.CACHE", Path(directory)), patch(
-                "data.urlopen", side_effect=[io.BytesIO(checksum), io.BytesIO(b"corrupt archive")]
+            with patch("study.data.CACHE", Path(directory)), patch(
+                "study.data.urlopen", side_effect=[io.BytesIO(checksum), io.BytesIO(b"corrupt archive")]
             ):
                 with self.assertRaisesRegex(ValueError, "Checksum mismatch"):
                     acquire("BTCUSDT", "2026-10-01", frequency="daily")

@@ -5,3 +5,5 @@ __pycache__/
 data/buckets.csv
 data/validation_buckets.csv
 data/equities/
+data/*manifest.json
+results/crypto/

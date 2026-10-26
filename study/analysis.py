@@ -182,7 +182,7 @@ def run(data_path, output_dir):
     if not rows:
         raise ValueError("no eligible evaluation days")
     summary = {
-        "protocol": "protocol.md",
+        "protocol": "docs/protocol.md",
         "evaluation_start": START.isoformat(), "evaluation_end": END.isoformat(),
         "notional_usdt": 1_000_000, "lookback_valid_days": LOOKBACK, "ewma_alpha": 0.2,
         "liquidity_stress": {
@@ -261,10 +261,10 @@ def run(data_path, output_dir):
 
 
 if __name__ == "__main__":
-    root = Path(__file__).resolve().parent
+    root = Path(__file__).resolve().parents[1]
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data", type=Path, default=root / "data" / "buckets.csv")
-    parser.add_argument("--output", type=Path, default=root)
+    parser.add_argument("--output", type=Path, default=root / "results/crypto")
     args = parser.parse_args()
     result = run(args.data, args.output)
     for asset, metrics in result["assets"].items():

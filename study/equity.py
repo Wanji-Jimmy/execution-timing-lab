@@ -10,7 +10,11 @@ from pathlib import Path
 
 import numpy as np
 
-from adaptive import METHODS, release_path, replay
+if __package__ in (None, ""):
+    import sys
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from study.adaptive import METHODS, release_path, replay
 
 
 ASSETS = ("EBAY", "LULU")
@@ -283,12 +287,13 @@ def run(data_dir, output_dir):
             "No output files were written."
         )
     results = summarize(rows)
-    root = Path(__file__).resolve().parent
-    sources = {name: sha256(root / name) for name in ("equity.py", "adaptive.py", "analysis.py", "protocol.md")}
+    root = Path(__file__).resolve().parents[1]
+    sources = {name: sha256(root / name) for name in
+               ("study/equity.py", "study/adaptive.py", "study/analysis.py", "docs/protocol.md")}
     acquisition = {name: sha256(data_dir / name) for name in
                    ("acquisition_manifest.json", "quality_report.json", "five_minute_coverage.json") if (data_dir / name).exists()}
     summary = {
-        "protocol": "protocol.md: Equity extension — 26 October 2026", "notional_usd": NOTIONAL,
+        "protocol": "docs/protocol.md: Equity extension — 26 October 2026", "notional_usd": NOTIONAL,
         "symbols": list(ASSETS), "fixed_alpha": ALPHA, "caps": CAPS, "lookback_valid_sessions": LOOKBACK,
         "data_source": "AlgoSeek public Machine Learning for Trading companion minute bars",
         "source_url": "https://algoseek.com/ml-for-trading/", "raw_data_redistributed": False,
@@ -335,8 +340,9 @@ def run(data_dir, output_dir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data-dir", type=Path, required=True)
-    parser.add_argument("--output-dir", type=Path, default=Path(__file__).with_name("results") / "equities")
+    root = Path(__file__).resolve().parents[1]
+    parser.add_argument("--data-dir", type=Path, default=root / "data/equities")
+    parser.add_argument("--output-dir", type=Path, default=root / "results/equities")
     args = parser.parse_args()
     result = run(args.data_dir, args.output_dir)
     print(f'{result["valid_asset_sessions"]}/80 valid asset-sessions; {result["evaluated_asset_sessions"]}/40 evaluated.')

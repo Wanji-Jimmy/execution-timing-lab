@@ -63,7 +63,7 @@ Both definitions accommodate USD 1m on every date, but they leave different head
 
 ## Reproduce
 
-First obtain the stock minute files from [AlgoSeek's book companion data](https://algoseek.com/ml-for-trading/) under the applicable terms. Put the 80 files in `data/equities/` as `EBAY_20210104.csv`, `LULU_20210104.csv`, etc. The required dates are in `sessions()` in `equity.py`. Raw stock data is not bundled or redistributed.
+First obtain the stock minute files from [AlgoSeek's book companion data](https://algoseek.com/ml-for-trading/) under the applicable terms. Put the 80 files in `data/equities/` as `EBAY_20210104.csv`, `LULU_20210104.csv`, etc. The required dates are in `sessions()` in [study/equity.py](../study/equity.py). Raw stock data is not bundled or redistributed.
 
 Then run the commands below. The tests use synthetic data and can also run without the stock files. The equity command stops without writing outputs if no usable evaluation data is available.
 
@@ -71,19 +71,21 @@ Then run the commands below. The tests use synthetic data and can also run witho
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-python -m unittest -q
-python equity.py --data-dir data/equities --output-dir results/equities
+python -m unittest discover -s tests -q
+python -m study.equity
 ```
 
 The selected session is 09:30 <= minute start < 16:00, America/New_York, grouped into 78 five-minute buckets. Records assigned to 16:00 are excluded, so the benchmark is not an auction-complete full-day VWAP. Each price is weighted by its corresponding volume field. The order quantity uses the first reported trade in the opening minute, not that minute's later VWAP.
 
 `results/equities/equity_daily.csv` contains 640 policy/cap/scope comparisons across 40 evaluated stock-days. The JSON records coverage, exclusions, exact history dates, file hashes and summaries. Tests check conservation, capacity limits, causal release decisions, missing data, zero-volume handling and the analytical boundary.
 
-## Earlier crypto experiment
+## Earlier work and source hashes
 
-The original BTC/ETH study remains in `adaptive.py`, `adaptive_results.json`, `adaptive_daily.csv` and `summary.png`. At a 1% cap in its 1–23 October 2026 validation, TWAP completed 21/23 BTC days versus 18/23 for historical/feedback; all methods completed 15/23 ETH days. Feedback never intervened. Some failures came from insufficient total capacity; others came from order timing. At 5%, all completed.
+The [archive branch](https://github.com/Wanji-Jimmy/execution-timing-lab/tree/archive/before-2026-10-26-simplification) preserves the earlier BTC/ETH outputs, plot script, download manifests and original layout. Its README and protocol document that experiment. The order there is denominated in USDT, not USD; the stock and crypto samples use different years and do not establish a causal cross-market comparison.
 
-Run `python data.py`, `python data.py --validation`, `python adaptive.py` and `python plot.py` to reproduce that study. Its order is denominated in USDT, not USD. The earlier `analysis.py` tracking experiment and its outputs are also preserved. The equity and crypto samples are from different years and do not establish a causal cross-market comparison. The full design and sequence of amendments are in [protocol.md](../protocol.md).
+The shared release, replay and data checks remain in `study/` with their tests. The full sequence of design decisions and amendments is in [protocol.md](protocol.md).
+
+The three saved stock result files were retained byte for byte during the layout cleanup on 26 October 2026. Their source hashes identify the original evaluation files, not the current reorganised files. Imports, paths and documentation have since changed; the saved results were not rerun or relabelled. A new run records the current source paths and hashes.
 
 ## Limits and references
 

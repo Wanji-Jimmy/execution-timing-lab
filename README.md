@@ -1,35 +1,14 @@
 # OxHack: Stock Order Execution
 
-**How much of an order can a trading schedule finish before the deadline?**
+A Python study of when to release a large stock order, started at OxHack and extended afterwards. It compares equal release (TWAP), a historical volume schedule, fixed early release, and feedback based on past intraday volume. The question is whether an order fails because total capacity is too small or because it was released too late.
 
-A Python project on order timing and capacity, started at OxHack and extended afterwards. It compares equal release (TWAP), a historical volume schedule, a fixed early release, and a rule that reacts to past intraday volume. The aim is to separate insufficient total capacity from capacity lost by releasing an order too late.
+The sample is EBAY and LULU minute data from 4 January to 2 March 2021: 40 sessions per stock, with the first 20 for history and the next 20 evaluated using a strictly prior rolling window.
 
-## Main finding
-
-**At USD 1 million, every method completed on every evaluated stock-day in the model. Volume feedback never changed the historical schedule.** The extra rule added no value in this sample.
-
-The stock experiment uses EBAY and LULU minute bars from 4 January to 2 March 2021: 40 sessions each, with the first 20 for history and the remaining 20 evaluated using a strictly prior rolling window. The sample and settings were fixed before the comparisons.
-
-Each release path is replayed at 1% and 5% participation caps, using either total reported volume or exchange-only volume as capacity. Prices and the benchmark stay fixed across those two definitions.
-
-All USD 1m orders fit, but the capacity definitions leave different headroom. For the historical schedule at the 1% cap:
-
-| Stock | Median limit: total volume | Median limit: exchange only |
-|---|---:|---:|
-| EBAY | USD 2.86m | USD 1.96m |
-| LULU | USD 2.87m | USD 2.03m |
-
-These limits are calculated from realised future volume. They are a **retrospective diagnostic added after the first run**, not a size recommendation available before trading. Fixed early release increased the limit but tracked the price benchmark less closely. That is a trade-off, not a universal strategy ranking.
+Every USD 1m order completed in the model. Feedback never changed the historical schedule. At the 1% participation cap, the historical schedule's median capacity limit was **29-31% lower with exchange-only volume** than with total reported volume. These limits use realised future volume: they are retrospective diagnostics added after the first run, not forecasts available before trading.
 
 ![Capacity limits and benchmark tracking](results/equities/equity_capacity.png)
 
-## View the saved results
-
-No download or Python setup is needed to inspect the [640 comparison rows](results/equities/equity_daily.csv), [coverage, hashes and summaries](results/equities/equity_results.json), or chart above. The rows cover 40 evaluated stock-days, four methods, two caps and two volume definitions.
-
-The [full study](docs/STUDY.md) explains the schedules, capacity formula, field checks and earlier BTC/ETH experiment. The [protocol](protocol.md) records design decisions and amendments. Saved source hashes identify the original evaluation; later input checks and documentation changes are recorded there.
-
-## Run the tests
+These are historical price and capacity proxies, not actual fills or PnL. The model omits spreads, fees, queue position and own market impact. Two stocks cannot establish a reliable trading advantage.
 
 From the repository root:
 
@@ -37,25 +16,10 @@ From the repository root:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
-python -m unittest -q
+python -m unittest discover -s tests -q
+python -m study.equity
 ```
 
-The 38 tests run without market-data downloads. They check quantity conservation, capacity limits, causal decisions, missing and zero-volume data, and the analytical completion boundary. A regression test also checks that missing input cannot overwrite existing results.
+The 38 tests need no downloads. The final command needs the 80 raw stock files described in [data setup](data/README.md); it replaces the saved outputs. Missing usable evaluation data stops the run before any output is written. Raw data is not redistributed.
 
-## Recompute the stock experiment
-
-First obtain the minute files from [AlgoSeek's book companion data](https://algoseek.com/ml-for-trading/) under the applicable terms. Put all 80 files in `data/equities/`, named `EBAY_20210104.csv`, `LULU_20210104.csv`, etc. The exact dates are in `sessions()` in [equity.py](equity.py). Raw stock data is excluded and is not redistributed.
-
-Then, with the environment above active:
-
-```bash
-python equity.py --data-dir data/equities --output-dir results/equities
-```
-
-This replaces the saved stock outputs. If no usable evaluation records exist, the command stops before writing any output.
-
-## Model limits
-
-Fills use historical five-minute reference prices and assumed participation caps. Bars do not reveal actual fills, queue position, spreads, fees or own market impact. Reported volume does not establish access to a venue's liquidity.
-
-The session is 09:30 inclusive to 16:00 exclusive, America/New_York; records assigned to 16:00 are excluded. The benchmark is therefore a selected-window reference, not an auction-complete daily VWAP. Shares are continuous, and provider adjustment flags remain uncertified. Two stocks and 20 evaluation dates each cannot establish future superiority, profit or net execution savings.
+Browse the [640 comparison rows](results/equities/equity_daily.csv), [metadata](results/equities/equity_results.json), [methods and limits](docs/STUDY.md), or [dated protocol](docs/protocol.md). Earlier BTC/ETH outputs and the original layout remain on the [archive branch](https://github.com/Wanji-Jimmy/execution-timing-lab/tree/archive/before-2026-10-26-simplification). Shared calculations and their tests remain here; the stock experiment is the main entry point.
